@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Shared Hive configuration for the metastore and HiveServer2 containers.
+
+  WHY THIS FILE EXISTS (measured failure): the apache/hive:4.0.0 image ships its
+  own /opt/hive/conf/hive-site.xml whose paths are meant for the image's local
+  filesystem:
+
+      hive.exec.scratchdir        = /opt/hive/scratch_dir
+      hive.metastore.warehouse.dir= /opt/hive/data/warehouse
+
+  With fs.defaultFS=hdfs://namenode:9000 those become *HDFS* paths, and /opt
+  does not exist in HDFS. HiveServer2 then tries to mkdir /opt directly under
+  the HDFS root as user `hive`, which fails with
+
+      AccessControlException: Permission denied: user=hive, access=WRITE,
+      inode="/":root:supergroup:drwxr-xr-x
+
+  ...inside CLIService.init -> SessionState.createSessionDirs, so the Thrift
+  port 10000 never binds and beeline reports "Connection refused".
+
+  Both containers mount this directory as /hive_custom_conf, and the image's
+  entrypoint symlinks every file in it into /opt/hive/conf, so this definition
+  replaces the baked-in one.
+-->
+<configuration>
+
+  <!-- Hive reads/writes these on HDFS (fs.defaultFS = hdfs://namenode:9000). -->
+  <property>
+    <name>hive.metastore.warehouse.dir</name>
+    <value>/user/hive/warehouse</value>
+  </property>
+  <property>
+    <name>hive.exec.scratchdir</name>
+    <value>/tmp/hive</value>
+  </property>
+
+  <!-- Run Hive SQL as MapReduce jobs on YARN, like the rest of the pipeline,
+       instead of the image default (Tez in local mode). -->
+  <property>
+    <name>hive.execution.engine</name>
+    <value>mr</value>
+  </property>
+  <property>
+    <name>mapreduce.framework.name</name>
+    <value>yarn</value>
+  </property>
+
+  <!-- Everything connects as the same container user; no proxy users here. -->
+  <property>
+    <name>hive.server2.enable.doAs</name>
+    <value>false</value>
+  </property>
+
+</configuration>

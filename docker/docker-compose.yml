@@ -1,0 +1,283 @@
+# Containerized Hadoop 3.3.6 + YARN + Spark 3.5.9 + Hive 4.0.0 lab cluster.
+#
+# This is ONE Docker engine on ONE laptop. It demonstrates the HDFS/YARN/Spark
+# architecture and lets every component be seen and configured; it is NOT a
+# multi-server benchmark and must never be described as one.
+#
+# Roles:
+#   namenode        - HDFS master: holds the filesystem namespace/metadata
+#   datanode1/2     - HDFS workers: hold the actual blocks (dfs.replication=2)
+#   resourcemanager - YARN master: schedules applications onto NodeManagers
+#   nodemanager1/2  - YARN workers: provide CPU/memory containers to Spark
+#   spark-client    - submits `spark-submit --master yarn` jobs
+#   postgres        - Hive metastore database (schema stored outside the cluster)
+#   metastore       - Hive Metastore: table -> location/column mapping
+#   hiveserver2     - Hive SQL endpoint used by beeline
+#
+# Every image is pinned; nothing uses the `latest` tag.
+
+name: yarn-analytics
+
+services:
+
+  # ---------------------------------------------------------------- HDFS ----
+  namenode:
+    build: ./hadoop
+    image: local/hadoop:3.3.6
+    container_name: namenode
+    hostname: namenode
+    command: ["bash", "/scripts/start-namenode.sh"]
+    ports:
+      - "9870:9870"   # NameNode web UI  -> http://localhost:9870
+      - "9000:9000"   # HDFS RPC
+    volumes:
+      - ./hadoop-config/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml:ro
+      - ./hadoop-config/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml:ro
+      - ./hadoop-config/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml:ro
+      - ./hadoop-config/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml:ro
+      - ./scripts:/scripts:ro
+      - namenode-data:/data/namenode
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9870/ > /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    mem_limit: 1g
+    restart: unless-stopped
+    networks: [cluster]
+
+  datanode1:
+    image: local/hadoop:3.3.6
+    container_name: datanode1
+    hostname: datanode1
+    command: ["bash", "/scripts/start-datanode.sh"]
+    volumes:
+      - ./hadoop-config/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml:ro
+      - ./hadoop-config/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml:ro
+      - ./hadoop-config/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml:ro
+      - ./hadoop-config/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml:ro
+      - ./scripts:/scripts:ro
+      - datanode1-data:/data/datanode
+    depends_on:
+      namenode:
+        condition: service_healthy
+    mem_limit: 768m
+    restart: unless-stopped
+    networks: [cluster]
+
+  datanode2:
+    image: local/hadoop:3.3.6
+    container_name: datanode2
+    hostname: datanode2
+    command: ["bash", "/scripts/start-datanode.sh"]
+    volumes:
+      - ./hadoop-config/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml:ro
+      - ./hadoop-config/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml:ro
+      - ./hadoop-config/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml:ro
+      - ./hadoop-config/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml:ro
+      - ./scripts:/scripts:ro
+      - datanode2-data:/data/datanode
+    depends_on:
+      namenode:
+        condition: service_healthy
+    mem_limit: 768m
+    restart: unless-stopped
+    networks: [cluster]
+
+  # ------------------------------------------------------------- YARN ------
+  resourcemanager:
+    image: local/hadoop:3.3.6
+    container_name: resourcemanager
+    hostname: resourcemanager
+    command: ["yarn", "resourcemanager"]
+    ports:
+      - "8088:8088"   # ResourceManager web UI -> http://localhost:8088
+    volumes:
+      - ./hadoop-config/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml:ro
+      - ./hadoop-config/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml:ro
+      - ./hadoop-config/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml:ro
+      - ./hadoop-config/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml:ro
+    depends_on:
+      namenode:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8088/ws/v1/cluster/info > /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    mem_limit: 1g
+    restart: unless-stopped
+    networks: [cluster]
+
+  nodemanager1:
+    image: local/hadoop:3.3.6
+    container_name: nodemanager1
+    hostname: nodemanager1
+    command: ["bash", "/scripts/start-nodemanager.sh"]
+    volumes:
+      - ./hadoop-config/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml:ro
+      - ./hadoop-config/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml:ro
+      - ./hadoop-config/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml:ro
+      - ./hadoop-config/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml:ro
+      - ./scripts:/scripts:ro
+    depends_on:
+      resourcemanager:
+        condition: service_healthy
+    mem_limit: 1g
+    restart: unless-stopped
+    networks: [cluster]
+
+  nodemanager2:
+    image: local/hadoop:3.3.6
+    container_name: nodemanager2
+    hostname: nodemanager2
+    command: ["bash", "/scripts/start-nodemanager.sh"]
+    volumes:
+      - ./hadoop-config/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml:ro
+      - ./hadoop-config/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml:ro
+      - ./hadoop-config/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml:ro
+      - ./hadoop-config/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml:ro
+      - ./scripts:/scripts:ro
+    depends_on:
+      resourcemanager:
+        condition: service_healthy
+    mem_limit: 1g
+    restart: unless-stopped
+    networks: [cluster]
+
+  # ------------------------------------------------------------ client -----
+  # Spark is NOT installed on the Windows host. Jobs are submitted from inside
+  # this container with the cluster's own Spark, so the version can never drift
+  # between the local venv and the cluster.
+  spark-client:
+    build: ./spark-client
+    image: local/spark-client:3.5.9
+    container_name: spark-client
+    hostname: spark-client
+    command: ["sleep", "infinity"]
+    working_dir: /work
+    environment:
+      HADOOP_CONF_DIR: /opt/hadoop-conf
+      PYSPARK_PYTHON: python3
+      PYSPARK_DRIVER_PYTHON: python3
+      # The stock spark image does not put /opt/spark/bin on PATH, so
+      # `spark-submit` would otherwise be "executable file not found".
+      PATH: /opt/spark/bin:/opt/java/openjdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    volumes:
+      - ./hadoop-config/core-site.xml:/opt/hadoop-conf/core-site.xml:ro
+      - ./hadoop-config/hdfs-site.xml:/opt/hadoop-conf/hdfs-site.xml:ro
+      - ./hadoop-config/yarn-site.xml:/opt/hadoop-conf/yarn-site.xml:ro
+      - ./hadoop-config/mapred-site.xml:/opt/hadoop-conf/mapred-site.xml:ro
+      - ../data:/work/data
+      - ../spark_jobs:/work/spark_jobs
+      - ../ml:/work/ml
+      - ../ingestion:/work/ingestion
+      - ../docs:/work/docs
+      - ../hive:/work/hive
+      # Spark jobs export their small result CSVs here; the Streamlit
+      # dashboard and the figure script read them from the Windows side.
+      - ../dashboard:/work/dashboard
+    depends_on:
+      namenode:
+        condition: service_healthy
+      resourcemanager:
+        condition: service_healthy
+    mem_limit: 1g
+    restart: unless-stopped
+    networks: [cluster]
+
+  # -------------------------------------------------------------- Hive -----
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    hostname: postgres
+    environment:
+      POSTGRES_DB: metastore_db
+      POSTGRES_USER: hive
+      POSTGRES_PASSWORD: password
+    volumes:
+      - hive-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hive -d metastore_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    mem_limit: 512m
+    restart: unless-stopped
+    networks: [cluster]
+
+  metastore:
+    build: ./hive
+    image: local/hive:4.0.0-postgres
+    container_name: metastore
+    hostname: metastore
+    environment:
+      DB_DRIVER: postgres
+      SERVICE_NAME: metastore
+      SERVICE_OPTS: >-
+        -Xmx1G
+        -Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver
+        -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres:5432/metastore_db
+        -Djavax.jdo.option.ConnectionUserName=hive
+        -Djavax.jdo.option.ConnectionPassword=password
+      HIVE_CUSTOM_CONF_DIR: /hive_custom_conf
+    ports:
+      - "9083:9083"
+    volumes:
+      - ./hadoop-config:/hive_custom_conf:ro
+      - warehouse:/opt/hive/data/warehouse
+    depends_on:
+      postgres:
+        condition: service_healthy
+      namenode:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/localhost/9083' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 30s
+    mem_limit: 1536m
+    restart: unless-stopped
+    networks: [cluster]
+
+  hiveserver2:
+    image: local/hive:4.0.0-postgres
+    container_name: hiveserver2
+    hostname: hiveserver2
+    environment:
+      SERVICE_NAME: hiveserver2
+      SERVICE_OPTS: >-
+        -Xmx1G
+        -Dhive.metastore.uris=thrift://metastore:9083
+      IS_RESUME: "true"
+      HIVE_CUSTOM_CONF_DIR: /hive_custom_conf
+    ports:
+      - "10000:10000"  # beeline JDBC
+      - "10002:10002"  # HiveServer2 web UI
+    volumes:
+      - ./hadoop-config:/hive_custom_conf:ro
+      - warehouse:/opt/hive/data/warehouse
+      # so `beeline -f /work/hive/create_tables.sql` works inside this container
+      - ../hive:/work/hive:ro
+    depends_on:
+      metastore:
+        condition: service_healthy
+      namenode:
+        condition: service_healthy
+    mem_limit: 1536m
+    restart: unless-stopped
+    networks: [cluster]
+
+networks:
+  cluster:
+    driver: bridge
+
+volumes:
+  namenode-data:
+  datanode1-data:
+  datanode2-data:
+  hive-db:
+  warehouse:
