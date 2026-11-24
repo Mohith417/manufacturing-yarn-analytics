@@ -224,3 +224,8 @@ __marimo__/
 
 data/*.csv
 .venv/
+
+# Generated result exports: reproducible by running spark_jobs/analytics.py and
+# ml/train.py. docs/figures/*.png (built from them) ARE committed.
+dashboard/data/*.csv
+*.log
