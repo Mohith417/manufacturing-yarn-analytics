@@ -29,6 +29,7 @@ from the run itself.
 
 import argparse
 import csv
+import math
 import os
 
 from pyspark.ml import Pipeline
@@ -180,11 +181,13 @@ def main():
 
     metric_rows = []
     predictions_by_model = {}
+    fitted_by_model = {}
     importance_rows = []
 
     for name, pipeline in models.items():
         print(f"[train] fitting {name}")
         fitted = pipeline.fit(weighted)
+        fitted_by_model[name] = fitted
         predictions = fitted.transform(test_weighted).cache()
         predictions_by_model[name] = predictions
 
@@ -236,6 +239,56 @@ def main():
     )
     print(f"[train] confusion matrix exported for best model: {best_name}")
 
+    # ------------------------------------------ what-if model parameters ----
+    # The dashboard must work with the cluster switched off, so it cannot load a
+    # Spark pipeline from HDFS. Logistic regression is a linear model in the
+    # scaled feature space, so exporting its coefficients, intercept and the
+    # scaler's mean/std reproduces the SAVED model's probability exactly:
+    #
+    #   z = intercept + sum_i coef_i * (x_i - mean_i) / std_i
+    #   p = 1 / (1 + exp(-z))
+    #
+    # This is the trained model, not a re-fit or an approximation. The check
+    # immediately below proves it on a real held-out row.
+    lr_pipeline = fitted_by_model["logistic_regression"]
+    scaler_model = lr_pipeline.stages[1]
+    lr_model = lr_pipeline.stages[2]
+    scaler_mean = scaler_model.mean.toArray().tolist()
+    scaler_std = scaler_model.std.toArray().tolist()
+    coefficients = lr_model.coefficients.toArray().tolist()
+    intercept = float(lr_model.intercept)
+
+    write_rows(
+        ["kind", "name", "value"],
+        [["intercept", "(intercept)", intercept]]
+        + [["coefficient", feature, float(value)]
+           for feature, value in zip(FEATURES, coefficients)]
+        + [["scaler_mean", feature, float(value)]
+           for feature, value in zip(FEATURES, scaler_mean)]
+        + [["scaler_std", feature, float(value)]
+           for feature, value in zip(FEATURES, scaler_std)],
+        "model_parameters",
+        args.export_dir,
+    )
+
+    # Verification: the formula the dashboard uses vs. the pipeline's own
+    # probability for the same row. If these disagree, the simulator would be
+    # misleading, so the run says so loudly instead of staying quiet.
+    probe = test.limit(1).cache()
+    probe_features = probe.select(*FEATURES).collect()[0]
+    model_probability = float(
+        lr_pipeline.transform(probe)
+        .select(vector_to_array("probability").alias("p"))
+        .collect()[0]["p"][1]
+    )
+    z = intercept
+    for feature, coef, mean, std in zip(FEATURES, coefficients, scaler_mean, scaler_std):
+        z += coef * (float(probe_features[feature]) - mean) / std
+    formula_probability = 1.0 / (1.0 + math.exp(-z))
+    print(f"[train] what-if check: pipeline={model_probability:.6f} "
+          f"formula={formula_probability:.6f} "
+          f"abs_diff={abs(model_probability - formula_probability):.9f}")
+
     # ------------------------------------------------------ machine risk ----
     # Risk score = predicted probability of downtime on each machine's MOST
     # RECENT reading, i.e. "how risky does this machine look right now". Scoring
@@ -245,7 +298,9 @@ def main():
         "downtime_probability", vector_to_array("probability")[1]
     )
     latest = (
-        best_predictions.select("machine_id", "line", "timestamp", "downtime_probability")
+        best_predictions.select(
+            "machine_id", "line", "timestamp", *FEATURES, "downtime_probability"
+        )
         .withColumn(
             "rn",
             F.row_number().over(
@@ -256,13 +311,72 @@ def main():
         .drop("rn")
     )
     latest.write.mode("overwrite").parquet(f"{args.output}/machine_risk")
+    latest_rows = latest.collect()
+    # The feature columns travel with the risk score because the dashboard's
+    # what-if simulator needs each machine's CURRENT state for the sliders it
+    # does not move (machine age, operating hours, maintenance history).
     write_rows(
-        ["machine_id", "line", "scored_at", "downtime_probability"],
-        [[r["machine_id"], r["line"], r["timestamp"], float(r["downtime_probability"])]
-         for r in latest.collect()],
+        ["machine_id", "line", "scored_at", "downtime_probability", *FEATURES],
+        [[r["machine_id"], r["line"], r["timestamp"],
+          float(r["downtime_probability"])]
+         + [float(r[feature]) for feature in FEATURES]
+         for r in latest_rows],
         "machine_risk",
         args.export_dir,
     )
+
+    # ----------------------------------------- maintenance priority list ----
+    # Risk alone ranks machines by probability, but a slow machine that is down
+    # often can cost fewer units than a fast one with a lower probability. This
+    # prices the risk in units, using only measured history:
+    #
+    #   mean_units_per_running_reading  average units produced in readings where
+    #                                   the machine was NOT down (units/minute)
+    #   expected_downtime_minutes_24h   = p(downtime) * 1440
+    #   estimated_lost_units_24h        = expected minutes * mean units/minute
+    #
+    # ASSUMPTION (stated on purpose): the next 24 hours resemble this machine's
+    # own history, and a downtime minute would have produced its typical running
+    # output. This is an estimate for ORDERING maintenance work, not a forecast
+    # with a confidence interval.
+    running_rate = (
+        spark.read.parquet(args.input)
+        .filter(F.col("downtime") == 0)
+        .groupBy("machine_id")
+        .agg(F.avg("units_produced").alias("mean_units_per_running_reading"))
+    )
+    priority = (
+        latest.join(running_rate, "machine_id", "left")
+        .withColumn("expected_downtime_minutes_24h",
+                    F.col("downtime_probability") * 1440.0)
+        .withColumn("estimated_lost_units_24h",
+                    F.col("expected_downtime_minutes_24h")
+                    * F.col("mean_units_per_running_reading"))
+        .withColumn("priority_rank",
+                    F.row_number().over(Window.orderBy(F.desc("estimated_lost_units_24h"))))
+        .orderBy("priority_rank")
+    )
+    priority.write.mode("overwrite").parquet(f"{args.output}/maintenance_priority")
+    priority_rows = priority.collect()
+    write_rows(
+        ["priority_rank", "machine_id", "line", "downtime_probability",
+         "mean_units_per_running_reading", "expected_downtime_minutes_24h",
+         "estimated_lost_units_24h", "scored_at"],
+        [[int(r["priority_rank"]), r["machine_id"], r["line"],
+          round(float(r["downtime_probability"]), 6),
+          round(float(r["mean_units_per_running_reading"] or 0.0), 4),
+          round(float(r["expected_downtime_minutes_24h"]), 4),
+          round(float(r["estimated_lost_units_24h"] or 0.0), 2),
+          r["timestamp"]]
+         for r in priority_rows],
+        "maintenance_priority",
+        args.export_dir,
+    )
+    if priority_rows:
+        top = priority_rows[0]
+        print(f"[train] highest estimated loss: {top['machine_id']} "
+              f"({top['line']}) ~{float(top['estimated_lost_units_24h'] or 0.0):.0f} "
+              f"units in 24h at p={float(top['downtime_probability']):.4f}")
 
     print(f"[train] best model by F1 on the test period: {best_name}")
     spark.stop()
