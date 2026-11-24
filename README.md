@@ -33,12 +33,14 @@ ingestion/             upload_to_hdfs.ps1 - docker cp + hdfs dfs -put
 docker/                compose file, images, Hadoop/Hive config, start scripts
 spark_jobs/clean.py    cleaning: schema, duplicates, missing values, derived rate
 spark_jobs/analytics.py 8 aggregates + correlation matrix, exports small CSVs
+spark_jobs/benchmark.py  the benchmark job (scan + aggregate), timed phases
+benchmarks/            PowerShell driver + subset builder for the tuning runs
 hive/create_tables.sql external tables over the Parquet Spark wrote
 hive/queries.sql       five analytical SQL queries
-ml/train.py            time-based split, class weighting, three models, risk score
+ml/train.py            time-based split, class weighting, models, risk + priority
 visualizations/         six figures from the exported CSVs
 dashboard/app.py       Streamlit dashboard (no cluster connection)
-docs/                  development plan, figures
+docs/benchmarks.md     measured YARN tuning table
 ```
 
 ## Running it
@@ -72,6 +74,17 @@ docker exec spark-client spark-submit --master yarn \
 docker exec spark-client spark-submit --master yarn \
   --conf spark.executor.memory=1g --conf spark.executor.cores=1 \
   --conf spark.driver.memory=1g /work/ml/train.py
+```
+
+YARN tuning benchmark (PowerShell, from the repository root) - writes
+`docs/benchmark_runs.csv`, summarised in `docs/benchmarks.md`:
+
+```powershell
+docker exec spark-client spark-submit --master yarn `
+  --conf spark.executor.memory=1g --conf spark.executor.cores=1 `
+  /work/benchmarks/prepare_subsets.py
+
+.\benchmarks\run_benchmarks.ps1
 ```
 
 Hive (Linux commands):
@@ -157,6 +170,40 @@ more features, or resampling).
 Leading coefficients of the logistic regression: `vibration_mm_s` 0.861,
 `days_since_maintenance` 0.632, `machine_age_years` 0.420, `temperature_c` 0.310.
 
+### Maintenance priority list (`ml/train.py`)
+
+Risk alone ranks machines by probability; a slow machine that is down often can
+cost fewer units than a fast one with a lower probability. The job therefore
+prices the risk in units and exports `maintenance_priority.csv`:
+
+```
+estimated_lost_units_24h = p(downtime) x 1440 minutes x mean units per running minute
+```
+
+The production rate is measured per machine from readings where it was **not**
+down. The 24-hour horizon assumes the near future resembles that machine's own
+history - an estimate for ordering work, not a forecast.
+
+Top of the list as measured: M013 (Line_B) ~657,019 units at p = 0.9122,
+M006 (Line_D) ~647,843 at p = 0.8994, M030 (Line_C) ~647,124 at p = 0.8989.
+
+### What-if simulator (`dashboard/app.py`)
+
+`ml/train.py` exports the fitted logistic-regression coefficients, intercept and
+the scaler's mean/std (`model_parameters.csv`), because the dashboard must not
+load a Spark pipeline from HDFS. The dashboard evaluates that linear model in
+Python, so the sliders show the **saved** model's probability:
+
+```
+z = intercept + sum_i coef_i * (x_i - mean_i) / std_i      p = 1 / (1 + exp(-z))
+```
+
+The run prints a check comparing this formula against the pipeline's own
+probability for a held-out row: `pipeline=0.266533 formula=0.266533
+abs_diff=0.000000000`. Sliders move days since maintenance, temperature and
+vibration; machine age, operating hours and maintenance history stay at the
+selected machine's latest values.
+
 ### Figures
 
 `docs/figures/` - production trend, downtime by machine, defect-rate distribution,
@@ -174,5 +221,8 @@ correlation heatmap, feature importance, confusion matrix.
   dropping a table never deletes data, and nothing is duplicated.
 * **Dashboard reads files, not the cluster.** The presentation layer keeps working
   with the cluster stopped, which is what makes it demo-able.
+* **Benchmarks state their limits.** `docs/benchmarks.md` reports one sample per
+  configuration and explains that a 5 MB table mostly measures YARN container
+  start-up, so the fastest configuration there is not a general recommendation.
 * **No invented numbers anywhere.** Every figure quoted above came from a run of
   the scripts in this repository.

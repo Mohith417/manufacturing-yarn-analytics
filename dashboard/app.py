@@ -10,6 +10,7 @@ from HDFS. The dashboard must never talk to HDFS/YARN - if the cluster is off,
 every page here still works.
 """
 
+import math
 from pathlib import Path
 
 import matplotlib
@@ -50,6 +51,58 @@ importance = load("feature_importance")
 confusion = load("confusion_matrix")
 metrics = load("model_metrics")
 risk = load("machine_risk")
+priority = load("maintenance_priority")
+model_parameters = load("model_parameters")
+
+# Feature order used by the model; exported with the parameters so this list
+# can never silently drift from ml/train.py without an obvious mismatch.
+FEATURES = [
+    "machine_age_years",
+    "operating_hours",
+    "temperature_c",
+    "vibration_mm_s",
+    "days_since_maintenance",
+    "past_maintenance_events",
+]
+
+
+def as_parameters(frame):
+    """Reshape model_parameters.csv into the structure the scorer needs.
+
+    The file is written by ml/train.py from the FITTED logistic-regression
+    pipeline: coefficient per feature, the scaler's mean/std, and the intercept.
+    Scoring with these reproduces the saved model exactly (train.py prints the
+    absolute difference between this formula and the pipeline on a held-out row).
+    """
+    if frame is None:
+        return None
+    params = {"intercept": 0.0, "coefficient": {}, "scaler_mean": {}, "scaler_std": {}}
+    for row in frame.itertuples(index=False):
+        if row.kind == "intercept":
+            params["intercept"] = float(row.value)
+        else:
+            params[row.kind][row.name] = float(row.value)
+    missing = [f for f in FEATURES
+               if f not in params["coefficient"]
+               or f not in params["scaler_mean"]
+               or f not in params["scaler_std"]]
+    if missing:
+        st.error(f"model_parameters.csv is missing entries for: {', '.join(missing)}")
+        return None
+    return params
+
+
+MODEL_PARAMS = as_parameters(model_parameters)
+
+
+def risk_score(features, params):
+    """Probability of downtime for one feature dict (scaled linear model)."""
+    z = params["intercept"]
+    for name in FEATURES:
+        z += (params["coefficient"][name]
+              * (features[name] - params["scaler_mean"][name])
+              / params["scaler_std"][name])
+    return 1.0 / (1.0 + math.exp(-z))
 
 st.title("Manufacturing Data Analytics: A YARN Approach")
 st.caption(
@@ -110,6 +163,81 @@ if defect_by_machine is not None:
     st.write(
         f"Defect rate {drow['defect_rate'] * 100:.2f} % "
         f"({int(drow['defects']):,} defects in {int(drow['units_produced']):,} units)."
+    )
+
+st.divider()
+
+# ------------------------------------------------- what-if simulator -----
+st.subheader("What-if risk simulator")
+if MODEL_PARAMS is None or risk is None:
+    missing_notice("model_parameters and machine_risk")
+else:
+    st.caption(
+        f"Scores the saved logistic-regression model for **{selected}** while you move "
+        "three inputs. The other three features (machine age, operating hours, "
+        "maintenance history) stay at this machine's current values."
+    )
+    current_row = risk[risk["machine_id"] == selected].iloc[0]
+    current = {feature: float(current_row[feature]) for feature in FEATURES}
+
+    col_days, col_temp, col_vib = st.columns(3)
+    days = col_days.slider(
+        "Days since maintenance", min_value=0, max_value=200,
+        value=int(round(current["days_since_maintenance"])),
+        help="Days since the last maintenance event.",
+    )
+    temperature = col_temp.slider(
+        "Temperature (\u00b0C)", min_value=40.0, max_value=110.0,
+        value=float(round(current["temperature_c"], 1)), step=0.1,
+    )
+    vibration = col_vib.slider(
+        "Vibration (mm/s)", min_value=0.0, max_value=10.0,
+        value=float(round(current["vibration_mm_s"], 2)), step=0.01,
+    )
+
+    simulated = dict(current)
+    simulated.update(
+        days_since_maintenance=float(days),
+        temperature_c=float(temperature),
+        vibration_mm_s=float(vibration),
+    )
+
+    base_probability = risk_score(current, MODEL_PARAMS)
+    simulated_probability = risk_score(simulated, MODEL_PARAMS)
+
+    col_before, col_after = st.columns(2)
+    col_before.metric("Current risk (this machine now)", f"{base_probability * 100:.1f} %")
+    col_after.metric(
+        "Simulated risk",
+        f"{simulated_probability * 100:.1f} %",
+        delta=f"{(simulated_probability - base_probability) * 100:+.1f} pp",
+        delta_color="inverse",
+    )
+    threshold = 0.5
+    st.caption(
+        f"At the model's {threshold:.1f} decision threshold this machine would be "
+        f"flagged **{'yes' if simulated_probability >= threshold else 'no'}** "
+        "under the simulated values. These are model outputs on synthetic data, "
+        "not a validated maintenance recommendation."
+    )
+
+st.divider()
+
+# -------------------------------------------------- maintenance priority --
+st.subheader("Maintenance priority list")
+if priority is None:
+    missing_notice("maintenance_priority")
+else:
+    shown = priority.head(10).copy()
+    shown["downtime_probability"] = (shown["downtime_probability"] * 100).round(1)
+    shown["estimated_lost_units_24h"] = shown["estimated_lost_units_24h"].round(0)
+    st.dataframe(shown, hide_index=True)
+    st.caption(
+        "Ranked by estimated lost units over the next 24 h = "
+        "p(downtime) x 1440 minutes x this machine's mean units per running "
+        "minute. The mean production rate is measured from history; the 24 h "
+        "horizon assumes the near future resembles it. Risk percentage is the "
+        "model's probability for the machine's latest reading."
     )
 
 st.divider()
