@@ -1,0 +1,8 @@
+# Shell scripts are mounted into Linux containers and executed by bash there.
+# A CRLF shebang line fails with "$'\r': command not found", so these files must
+# stay LF even though the repository is developed on Windows.
+*.sh            text eol=lf
+*.sql           text eol=lf
+Dockerfile      text eol=lf
+docker/**/Dockerfile text eol=lf
+*.ps1           text eol=crlf
