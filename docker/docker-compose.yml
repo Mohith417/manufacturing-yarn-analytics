@@ -172,6 +172,7 @@ services:
       - ./hadoop-config/mapred-site.xml:/opt/hadoop-conf/mapred-site.xml:ro
       - ../data:/work/data
       - ../spark_jobs:/work/spark_jobs
+      - ../benchmarks:/work/benchmarks
       - ../ml:/work/ml
       - ../ingestion:/work/ingestion
       - ../docs:/work/docs

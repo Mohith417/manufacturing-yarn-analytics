@@ -1,0 +1,11 @@
+timestamp,run,dataset,input,executors,executor_memory,executor_cores,input_rows,read_s,agg_s,driver_wall_s,end_to_end_s,status
+2026-11-24T21:43:58,e1_m1024_c1,full,hdfs:///data/clean,1,1024m,1,495000,1.636,1.869,17.887,19.659,OK
+2026-11-24T21:44:38,e2_m1024_c1,full,hdfs:///data/clean,2,1024m,1,495000,1.613,1.882,38.009,40.196,OK
+2026-11-24T21:44:59,e2_m512_c1,full,hdfs:///data/clean,2,512m,1,495000,2.832,2.124,18.924,21.082,OK
+2026-11-24T21:45:41,e4_m512_c1,full,hdfs:///data/clean,4,512m,1,495000,2.910,2.406,39.718,41.597,OK
+2026-11-24T21:46:22,e2_m1024_c2,full,hdfs:///data/clean,2,1024m,2,495000,2.116,2.590,39.700,41.671,OK
+2026-11-24T21:46:47,e1_m1024_c1,half,hdfs:///data/bench/half,1,1024m,1,247772,2.459,2.728,22.181,24.531,OK
+2026-11-24T21:47:28,e2_m1024_c1,half,hdfs:///data/bench/half,2,1024m,1,247772,1.662,1.949,38.022,40.562,OK
+2026-11-24T21:47:49,e2_m512_c1,half,hdfs:///data/bench/half,2,512m,1,247772,2.946,2.263,19.498,21.624,OK
+2026-11-24T21:48:31,e4_m512_c1,half,hdfs:///data/bench/half,4,512m,1,247772,2.727,2.994,40.238,42.234,OK
+2026-11-24T21:49:12,e2_m1024_c2,half,hdfs:///data/bench/half,2,1024m,2,247772,1.696,2.007,38.534,40.83,OK
