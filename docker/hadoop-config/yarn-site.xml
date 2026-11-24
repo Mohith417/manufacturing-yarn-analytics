@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!-- YARN is the cluster resource manager: it decides how much memory/CPU each
+     application gets. Sizes below are deliberately small so the whole cluster
+     fits on one 16 GB laptop:
+       2 NodeManagers x 2048 MB = 4096 MB of YARN capacity,
+       smallest container 512 MB, largest 2048 MB.
+     With Spark executors at 1024 MB + 384 MB overhead (1408 MB) an executor
+     fits in one container of 2048 MB. -->
+<configuration>
+  <property>
+    <name>yarn.resourcemanager.hostname</name>
+    <value>resourcemanager</value>
+  </property>
+  <property>
+    <name>yarn.resourcemanager.webapp.address</name>
+    <value>0.0.0.0:8088</value>
+  </property>
+
+  <property>
+    <name>yarn.nodemanager.resource.memory-mb</name>
+    <value>2048</value>
+  </property>
+  <property>
+    <name>yarn.nodemanager.resource.cpu-vcores</name>
+    <value>2</value>
+  </property>
+  <property>
+    <name>yarn.scheduler.minimum-allocation-mb</name>
+    <value>512</value>
+  </property>
+  <property>
+    <name>yarn.scheduler.maximum-allocation-mb</name>
+    <value>2048</value>
+  </property>
+  <property>
+    <name>yarn.scheduler.maximum-allocation-vcores</name>
+    <value>2</value>
+  </property>
+
+  <property>
+    <name>yarn.nodemanager.aux-services</name>
+    <value>mapreduce_shuffle</value>
+  </property>
+  <property>
+    <name>yarn.nodemanager.aux-services.mapreduce_shuffle.class</name>
+    <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+  </property>
+
+  <property>
+    <name>yarn.nodemanager.local-dirs</name>
+    <value>/data/yarn/local</value>
+  </property>
+  <property>
+    <name>yarn.nodemanager.log-dirs</name>
+    <value>/data/yarn/log</value>
+  </property>
+
+  <!-- Docker reports the host's memory inside the container, so YARN's own
+       physical/virtual memory and disk-health probes misfire here. Disabling
+       them stops containers being killed for the wrong reason. -->
+  <property>
+    <name>yarn.nodemanager.pmem-check-enabled</name>
+    <value>false</value>
+  </property>
+  <property>
+    <name>yarn.nodemanager.vmem-check-enabled</name>
+    <value>false</value>
+  </property>
+  <property>
+    <name>yarn.nodemanager.disk-health-checker.enable</name>
+    <value>false</value>
+  </property>
+
+  <property>
+    <name>yarn.log-aggregation-enable</name>
+    <value>false</value>
+  </property>
+</configuration>
