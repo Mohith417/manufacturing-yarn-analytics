@@ -1,0 +1,10 @@
+# Dependencies and build output for the static dashboard.
+node_modules/
+dist/
+.vite/
+
+# Python bytecode from the export script.
+__pycache__/
+
+# Local review captures, not part of the app.
+screenshots/

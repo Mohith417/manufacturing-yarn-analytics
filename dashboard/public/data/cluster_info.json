@@ -1,0 +1,6 @@
+{
+  "nodes": 2,
+  "spark_version": "3.5.9",
+  "hadoop_version": "3.3.6",
+  "rows_processed": 495000
+}

@@ -1,0 +1,10 @@
+{
+  "total_units": 247532590,
+  "downtime_rate": 0.075493,
+  "avg_defect_rate": 0.028894,
+  "high_risk_count": 8,
+  "risk_rule": {
+    "red_at": 0.7,
+    "amber_at": 0.4
+  }
+}

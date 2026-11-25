@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b0d11" media="(prefers-color-scheme: dark)" />
+    <meta
+      name="description"
+      content="YarnLens - manufacturing analytics over a containerized Hadoop, YARN, Spark and Hive pipeline. Synthetic dataset."
+    />
+    <title>YarnLens · Manufacturing Data Analytics</title>
+    <script>
+      // Set the theme before first paint so a dark-mode visitor never sees a
+      // white flash. Storage and matchMedia can both throw; light is the safe
+      // fallback.
+      (function () {
+        try {
+          var stored = window.localStorage.getItem("yarnlens.theme");
+          var dark =
+            stored === "dark" ||
+            ((stored === null || stored === "system") &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.dataset.theme = dark ? "dark" : "light";
+          document.documentElement.style.colorScheme = dark ? "dark" : "light";
+        } catch (error) {
+          document.documentElement.dataset.theme = "light";
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

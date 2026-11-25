@@ -1,0 +1,32 @@
+[
+  {
+    "feature": "Vibration",
+    "feature_key": "vibration_mm_s",
+    "importance": 0.861329
+  },
+  {
+    "feature": "Days since maintenance",
+    "feature_key": "days_since_maintenance",
+    "importance": 0.631631
+  },
+  {
+    "feature": "Machine age",
+    "feature_key": "machine_age_years",
+    "importance": 0.420202
+  },
+  {
+    "feature": "Temperature",
+    "feature_key": "temperature_c",
+    "importance": 0.310065
+  },
+  {
+    "feature": "Past maintenance events",
+    "feature_key": "past_maintenance_events",
+    "importance": 0.104294
+  },
+  {
+    "feature": "Operating hours",
+    "feature_key": "operating_hours",
+    "importance": 0.015586
+  }
+]
