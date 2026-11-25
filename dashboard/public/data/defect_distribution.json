@@ -1,0 +1,42 @@
+[
+  {
+    "bin_start": 2.7635,
+    "bin_end": 2.7927,
+    "count": 4
+  },
+  {
+    "bin_start": 2.7927,
+    "bin_end": 2.8218,
+    "count": 7
+  },
+  {
+    "bin_start": 2.8218,
+    "bin_end": 2.8509,
+    "count": 3
+  },
+  {
+    "bin_start": 2.8509,
+    "bin_end": 2.88,
+    "count": 9
+  },
+  {
+    "bin_start": 2.88,
+    "bin_end": 2.9091,
+    "count": 4
+  },
+  {
+    "bin_start": 2.9091,
+    "bin_end": 2.9382,
+    "count": 9
+  },
+  {
+    "bin_start": 2.9382,
+    "bin_end": 2.9674,
+    "count": 8
+  },
+  {
+    "bin_start": 2.9674,
+    "bin_end": 2.9965,
+    "count": 6
+  }
+]

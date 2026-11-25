@@ -3,7 +3,7 @@
 A software-only big-data pipeline over **synthetic** manufacturing telemetry:
 
 ```
-generate  ->  HDFS  ->  Spark on YARN  ->  Hive (PostgreSQL metastore)  ->  figures + Streamlit
+generate  ->  HDFS  ->  Spark on YARN  ->  Hive (PostgreSQL metastore)  ->  figures + web dashboard
 ```
 
 > **The data is synthetic.** Every row comes from `data/generate_data.py`. No number
@@ -21,7 +21,7 @@ generate  ->  HDFS  ->  Spark on YARN  ->  Hive (PostgreSQL metastore)  ->  figu
 | ML | Spark MLlib (LR, Decision Tree, Random Forest) | bundled with Spark 3.5.9 |
 | SQL | HiveServer2 + metastore, schema in PostgreSQL 16 | Hive 4.0.0 |
 | Local analysis | pandas / numpy / matplotlib / seaborn / scikit-learn | see `requirements.txt` |
-| Dashboard | Streamlit, reads exported CSVs only | see `requirements.txt` |
+| Dashboard | Static React + Vite front end, reads exported JSON only | see `dashboard/package.json` |
 
 Images are pinned in `docker/docker-compose.yml`; nothing uses `latest`.
 
@@ -39,7 +39,10 @@ hive/create_tables.sql external tables over the Parquet Spark wrote
 hive/queries.sql       five analytical SQL queries
 ml/train.py            time-based split, class weighting, models, risk + priority
 visualizations/         six figures from the exported CSVs
-dashboard/app.py       Streamlit dashboard (no cluster connection)
+dashboard/             React + Vite front end (no cluster connection)
+dashboard/scripts/     export_dashboard_data.py - CSV exports to JSON
+dashboard/README.md    pages, design notes and the JSON data contract
+legacy/streamlit/      previous Streamlit prototype (superseded)
 docs/benchmarks.md     measured YARN tuning table
 ```
 
@@ -94,12 +97,21 @@ docker exec hiveserver2 beeline -u 'jdbc:hive2://localhost:10000/' -f /work/hive
 docker exec hiveserver2 beeline -u 'jdbc:hive2://localhost:10000/' -f /work/hive/queries.sql
 ```
 
-Local figures and dashboard (PowerShell, no cluster needed):
+Local figures and web dashboard (PowerShell, no cluster needed):
 
 ```powershell
 .venv\Scripts\Activate.ps1
 python visualizations\make_figures.py
-streamlit run dashboard\app.py
+
+# convert the exported CSVs into the JSON the web app reads
+.venv\Scripts\python.exe dashboard\scripts\export_dashboard_data.py
+
+# install once, then start the front end
+cd dashboard
+npm install
+npm run dev        # http://127.0.0.1:5173
+
+npm run build      # static production build in dashboard/dist
 ```
 
 Web UIs: NameNode <http://localhost:9870>, YARN <http://localhost:8088>,
@@ -187,12 +199,14 @@ history - an estimate for ordering work, not a forecast.
 Top of the list as measured: M013 (Line_B) ~657,019 units at p = 0.9122,
 M006 (Line_D) ~647,843 at p = 0.8994, M030 (Line_C) ~647,124 at p = 0.8989.
 
-### What-if simulator (`dashboard/app.py`)
+### What-if simulator (web dashboard)
 
 `ml/train.py` exports the fitted logistic-regression coefficients, intercept and
-the scaler's mean/std (`model_parameters.csv`), because the dashboard must not
-load a Spark pipeline from HDFS. The dashboard evaluates that linear model in
-Python, so the sliders show the **saved** model's probability:
+the scaler's mean/std (`model_parameters.csv`), because the browser must not
+load a Spark pipeline from HDFS. The exporter copies them into
+`dashboard/public/data/model_coefficients.json`, and the React front end
+evaluates that linear model in the browser, so the sliders show the **saved**
+model's probability:
 
 ```
 z = intercept + sum_i coef_i * (x_i - mean_i) / std_i      p = 1 / (1 + exp(-z))

@@ -1,0 +1,1102 @@
+[
+  {
+    "machine_id": "M013",
+    "line": "Line_B",
+    "age_years": 16.6,
+    "risk_score": 0.912224,
+    "risk_level": "red",
+    "est_lost_units": 657018.86,
+    "priority_rank": 1,
+    "top_factors": [
+      "Vibration",
+      "Days since maintenance",
+      "Machine age"
+    ],
+    "features": {
+      "machine_age_years": 16.6,
+      "operating_hours": 23.91,
+      "temperature_c": 74.12,
+      "vibration_mm_s": 8.435,
+      "days_since_maintenance": 135.0,
+      "past_maintenance_events": 2.0
+    }
+  },
+  {
+    "machine_id": "M006",
+    "line": "Line_D",
+    "age_years": 15.5,
+    "risk_score": 0.899371,
+    "risk_level": "red",
+    "est_lost_units": 647842.53,
+    "priority_rank": 2,
+    "top_factors": [
+      "Vibration",
+      "Days since maintenance (protective)",
+      "Machine age"
+    ],
+    "features": {
+      "machine_age_years": 15.5,
+      "operating_hours": 18.82,
+      "temperature_c": 81.85000000000001,
+      "vibration_mm_s": 11.373000000000001,
+      "days_since_maintenance": 27.0,
+      "past_maintenance_events": 5.0
+    }
+  },
+  {
+    "machine_id": "M018",
+    "line": "Line_A",
+    "age_years": 16.7,
+    "risk_score": 0.89926,
+    "risk_level": "red",
+    "est_lost_units": 646812.67,
+    "priority_rank": 4,
+    "top_factors": [
+      "Vibration",
+      "Days since maintenance",
+      "Machine age"
+    ],
+    "features": {
+      "machine_age_years": 16.7,
+      "operating_hours": 2.83,
+      "temperature_c": 70.71000000000001,
+      "vibration_mm_s": 7.12,
+      "days_since_maintenance": 175.0,
+      "past_maintenance_events": 3.0
+    }
+  },
+  {
+    "machine_id": "M030",
+    "line": "Line_C",
+    "age_years": 15.2,
+    "risk_score": 0.898881,
+    "risk_level": "red",
+    "est_lost_units": 647124.1,
+    "priority_rank": 3,
+    "top_factors": [
+      "Vibration",
+      "Days since maintenance",
+      "Machine age"
+    ],
+    "features": {
+      "machine_age_years": 15.2,
+      "operating_hours": 13.32,
+      "temperature_c": 80.49,
+      "vibration_mm_s": 8.174,
+      "days_since_maintenance": 132.0,
+      "past_maintenance_events": 4.0
+    }
+  },
+  {
+    "machine_id": "M022",
+    "line": "Line_C",
+    "age_years": 19.4,
+    "risk_score": 0.880764,
+    "risk_level": "red",
+    "est_lost_units": 634562.79,
+    "priority_rank": 5,
+    "top_factors": [
+      "Vibration",
+      "Machine age",
+      "Temperature"
+    ],
+    "features": {
+      "machine_age_years": 19.4,
+      "operating_hours": 16.91,
+      "temperature_c": 90.12,
+      "vibration_mm_s": 6.391,
+      "days_since_maintenance": 120.0,
+      "past_maintenance_events": 3.0
+    }
+  },
+  {
+    "machine_id": "M020",
+    "line": "Line_B",
+    "age_years": 15.4,
+    "risk_score": 0.851888,
+    "risk_level": "red",
+    "est_lost_units": 613278.63,
+    "priority_rank": 6,
+    "top_factors": [
+      "Vibration",
+      "Days since maintenance",
+      "Temperature"
+    ],
+    "features": {
+      "machine_age_years": 15.4,
+      "operating_hours": 7.39,
+      "temperature_c": 85.88,
+      "vibration_mm_s": 5.712,
+      "days_since_maintenance": 147.0,
+      "past_maintenance_events": 1.0
+    }
+  },
+  {
+    "machine_id": "M039",
+    "line": "Line_B",
+    "age_years": 13.7,
+    "risk_score": 0.786615,
+    "risk_level": "red",
+    "est_lost_units": 566350.11,
+    "priority_rank": 7,
+    "top_factors": [
+      "Days since maintenance",
+      "Vibration",
+      "Machine age"
+    ],
+    "features": {
+      "machine_age_years": 13.7,
+      "operating_hours": 12.68,
+      "temperature_c": 74.26,
+      "vibration_mm_s": 5.425000000000001,
+      "days_since_maintenance": 166.0,
+      "past_maintenance_events": 2.0
+    }
+  },
+  {
+    "machine_id": "M024",
+    "line": "Line_D",
+    "age_years": 15.8,
+    "risk_score": 0.761986,
+    "risk_level": "red",
+    "est_lost_units": 549302.9,
+    "priority_rank": 8,
+    "top_factors": [
+      "Vibration",
+      "Machine age",
+      "Days since maintenance (protective)"
+    ],
+    "features": {
+      "machine_age_years": 15.8,
+      "operating_hours": 16.35,
+      "temperature_c": 70.6,
+      "vibration_mm_s": 7.521,
+      "days_since_maintenance": 76.0,
+      "past_maintenance_events": 1.0
+    }
+  },
+  {
+    "machine_id": "M041",
+    "line": "Line_A",
+    "age_years": 16.8,
+    "risk_score": 0.6296,
+    "risk_level": "amber",
+    "est_lost_units": 452314.26,
+    "priority_rank": 9,
+    "top_factors": [
+      "Vibration",
+      "Days since maintenance",
+      "Machine age"
+    ],
+    "features": {
+      "machine_age_years": 16.8,
+      "operating_hours": 4.48,
+      "temperature_c": 63.44,
+      "vibration_mm_s": 4.865,
+      "days_since_maintenance": 131.0,
+      "past_maintenance_events": 3.0
+    }
+  },
+  {
+    "machine_id": "M011",
+    "line": "Line_D",
+    "age_years": 18.6,
+    "risk_score": 0.61685,
+    "risk_level": "amber",
+    "est_lost_units": 444807.08,
+    "priority_rank": 10,
+    "top_factors": [
+      "Machine age",
+      "Temperature",
+      "Days since maintenance"
+    ],
+    "features": {
+      "machine_age_years": 18.6,
+      "operating_hours": 21.56,
+      "temperature_c": 87.67999999999999,
+      "vibration_mm_s": 2.615,
+      "days_since_maintenance": 122.0,
+      "past_maintenance_events": 1.0
+    }
+  },
+  {
+    "machine_id": "M028",
+    "line": "Line_C",
+    "age_years": 3.9,
+    "risk_score": 0.604595,
+    "risk_level": "amber",
+    "est_lost_units": 434898.93,
+    "priority_rank": 11,
+    "top_factors": [
+      "Vibration",
+      "Machine age (protective)",
+      "Days since maintenance (protective)"
+    ],
+    "features": {
+      "machine_age_years": 3.9,
+      "operating_hours": 15.28,
+      "temperature_c": 63.47,
+      "vibration_mm_s": 9.5,
+      "days_since_maintenance": 55.0,
+      "past_maintenance_events": 3.0
+    }
+  },
+  {
+    "machine_id": "M005",
+    "line": "Line_D",
+    "age_years": 19.5,
+    "risk_score": 0.573606,
+    "risk_level": "amber",
+    "est_lost_units": 412627.49,
+    "priority_rank": 12,
+    "top_factors": [
+      "Machine age",
+      "Vibration (protective)",
+      "Days since maintenance"
+    ],
+    "features": {
+      "machine_age_years": 19.5,
+      "operating_hours": 8.57,
+      "temperature_c": 83.91,
+      "vibration_mm_s": 2.2910000000000004,
+      "days_since_maintenance": 129.0,
+      "past_maintenance_events": 3.0
+    }
+  },
+  {
+    "machine_id": "M012",
+    "line": "Line_C",
+    "age_years": 13.2,
+    "risk_score": 0.518941,
+    "risk_level": "amber",
+    "est_lost_units": 373654.04,
+    "priority_rank": 13,
+    "top_factors": [
+      "Vibration",
+      "Days since maintenance (protective)",
+      "Machine age"
+    ],
+    "features": {
+      "machine_age_years": 13.2,
+      "operating_hours": 3.12,
+      "temperature_c": 78.23,
+      "vibration_mm_s": 7.273000000000001,
+      "days_since_maintenance": 10.0,
+      "past_maintenance_events": 5.0
+    }
+  },
+  {
+    "machine_id": "M007",
+    "line": "Line_C",
+    "age_years": 15.9,
+    "risk_score": 0.502079,
+    "risk_level": "amber",
+    "est_lost_units": 361674.21,
+    "priority_rank": 14,
+    "top_factors": [
+      "Machine age",
+      "Days since maintenance",
+      "Vibration"
+    ],
+    "features": {
+      "machine_age_years": 15.9,
+      "operating_hours": 18.75,
+      "temperature_c": 73.78,
+      "vibration_mm_s": 3.77,
+      "days_since_maintenance": 107.0,
+      "past_maintenance_events": 3.0
+    }
+  },
+  {
+    "machine_id": "M015",
+    "line": "Line_C",
+    "age_years": 5.3,
+    "risk_score": 0.485716,
+    "risk_level": "amber",
+    "est_lost_units": 348937.55,
+    "priority_rank": 15,
+    "top_factors": [
+      "Days since maintenance",
+      "Machine age (protective)",
+      "Vibration"
+    ],
+    "features": {
+      "machine_age_years": 5.3,
+      "operating_hours": 18.56,
+      "temperature_c": 78.68,
+      "vibration_mm_s": 4.125,
+      "days_since_maintenance": 142.0,
+      "past_maintenance_events": 2.0
+    }
+  },
+  {
+    "machine_id": "M042",
+    "line": "Line_B",
+    "age_years": 14.3,
+    "risk_score": 0.464706,
+    "risk_level": "amber",
+    "est_lost_units": 334824.17,
+    "priority_rank": 16,
+    "top_factors": [
+      "Days since maintenance (protective)",
+      "Temperature",
+      "Vibration"
+    ],
+    "features": {
+      "machine_age_years": 14.3,
+      "operating_hours": 6.22,
+      "temperature_c": 87.34,
+      "vibration_mm_s": 4.523,
+      "days_since_maintenance": 39.0,
+      "past_maintenance_events": 2.0
+    }
+  },
+  {
+    "machine_id": "M048",
+    "line": "Line_D",
+    "age_years": 14.0,
+    "risk_score": 0.458891,
+    "risk_level": "amber",
+    "est_lost_units": 330983.44,
+    "priority_rank": 17,
+    "top_factors": [
+      "Vibration",
+      "Temperature (protective)",
+      "Machine age"
+    ],
+    "features": {
+      "machine_age_years": 14.0,
+      "operating_hours": 1.25,
+      "temperature_c": 62.24,
+      "vibration_mm_s": 4.821000000000001,
+      "days_since_maintenance": 86.0,
+      "past_maintenance_events": 1.0
+    }
+  },
+  {
+    "machine_id": "M000",
+    "line": "Line_D",
+    "age_years": 15.7,
+    "risk_score": 0.439832,
+    "risk_level": "amber",
+    "est_lost_units": 316616.0,
+    "priority_rank": 18,
+    "top_factors": [
+      "Vibration (protective)",
+      "Days since maintenance",
+      "Machine age"
+    ],
+    "features": {
+      "machine_age_years": 15.7,
+      "operating_hours": 3.27,
+      "temperature_c": 84.34,
+      "vibration_mm_s": 1.2510000000000001,
+      "days_since_maintenance": 137.0,
+      "past_maintenance_events": 2.0
+    }
+  },
+  {
+    "machine_id": "M045",
+    "line": "Line_D",
+    "age_years": 16.3,
+    "risk_score": 0.437544,
+    "risk_level": "amber",
+    "est_lost_units": 314459.74,
+    "priority_rank": 19,
+    "top_factors": [
+      "Machine age",
+      "Days since maintenance (protective)",
+      "Temperature"
+    ],
+    "features": {
+      "machine_age_years": 16.3,
+      "operating_hours": 10.89,
+      "temperature_c": 83.47,
+      "vibration_mm_s": 3.359,
+      "days_since_maintenance": 66.0,
+      "past_maintenance_events": 2.0
+    }
+  },
+  {
+    "machine_id": "M014",
+    "line": "Line_C",
+    "age_years": 9.4,
+    "risk_score": 0.428307,
+    "risk_level": "amber",
+    "est_lost_units": 308409.0,
+    "priority_rank": 20,
+    "top_factors": [
+      "Vibration",
+      "Temperature (protective)",
+      "Days since maintenance"
+    ],
+    "features": {
+      "machine_age_years": 9.4,
+      "operating_hours": 12.79,
+      "temperature_c": 68.85000000000001,
+      "vibration_mm_s": 4.835,
+      "days_since_maintenance": 101.0,
+      "past_maintenance_events": 3.0
+    }
+  },
+  {
+    "machine_id": "M001",
+    "line": "Line_A",
+    "age_years": 9.3,
+    "risk_score": 0.425428,
+    "risk_level": "amber",
+    "est_lost_units": 305685.2,
+    "priority_rank": 22,
+    "top_factors": [
+      "Days since maintenance",
+      "Vibration (protective)",
+      "Past maintenance events (protective)"
+    ],
+    "features": {
+      "machine_age_years": 9.3,
+      "operating_hours": 14.7,
+      "temperature_c": 75.66,
+      "vibration_mm_s": 2.4800000000000004,
+      "days_since_maintenance": 177.0,
+      "past_maintenance_events": 6.0
+    }
+  },
+  {
+    "machine_id": "M031",
+    "line": "Line_C",
+    "age_years": 19.4,
+    "risk_score": 0.424095,
+    "risk_level": "amber",
+    "est_lost_units": 305907.27,
+    "priority_rank": 21,
+    "top_factors": [
+      "Machine age",
+      "Temperature (protective)",
+      "Vibration"
+    ],
+    "features": {
+      "machine_age_years": 19.4,
+      "operating_hours": 11.28,
+      "temperature_c": 57.97,
+      "vibration_mm_s": 3.9930000000000003,
+      "days_since_maintenance": 79.0,
+      "past_maintenance_events": 1.0
+    }
+  },
+  {
+    "machine_id": "M046",
+    "line": "Line_A",
+    "age_years": 8.4,
+    "risk_score": 0.422904,
+    "risk_level": "amber",
+    "est_lost_units": 305469.85,
+    "priority_rank": 23,
+    "top_factors": [
+      "Vibration",
+      "Days since maintenance (protective)",
+      "Machine age (protective)"
+    ],
+    "features": {
+      "machine_age_years": 8.4,
+      "operating_hours": 22.05,
+      "temperature_c": 69.57,
+      "vibration_mm_s": 6.09,
+      "days_since_maintenance": 69.0,
+      "past_maintenance_events": 4.0
+    }
+  },
+  {
+    "machine_id": "M044",
+    "line": "Line_D",
+    "age_years": 16.8,
+    "risk_score": 0.4176,
+    "risk_level": "amber",
+    "est_lost_units": 301132.08,
+    "priority_rank": 24,
+    "top_factors": [
+      "Days since maintenance (protective)",
+      "Vibration",
+      "Machine age"
+    ],
+    "features": {
+      "machine_age_years": 16.8,
+      "operating_hours": 13.13,
+      "temperature_c": 78.02,
+      "vibration_mm_s": 4.777,
+      "days_since_maintenance": 28.0,
+      "past_maintenance_events": 3.0
+    }
+  },
+  {
+    "machine_id": "M033",
+    "line": "Line_C",
+    "age_years": 8.0,
+    "risk_score": 0.342013,
+    "risk_level": "green",
+    "est_lost_units": 246562.33,
+    "priority_rank": 25,
+    "top_factors": [
+      "Vibration",
+      "Days since maintenance (protective)",
+      "Machine age (protective)"
+    ],
+    "features": {
+      "machine_age_years": 8.0,
+      "operating_hours": 22.87,
+      "temperature_c": 76.4,
+      "vibration_mm_s": 6.557,
+      "days_since_maintenance": 1.0,
+      "past_maintenance_events": 2.0
+    }
+  },
+  {
+    "machine_id": "M047",
+    "line": "Line_A",
+    "age_years": 6.5,
+    "risk_score": 0.333188,
+    "risk_level": "green",
+    "est_lost_units": 239515.42,
+    "priority_rank": 26,
+    "top_factors": [
+      "Vibration",
+      "Days since maintenance (protective)",
+      "Machine age (protective)"
+    ],
+    "features": {
+      "machine_age_years": 6.5,
+      "operating_hours": 6.08,
+      "temperature_c": 79.13,
+      "vibration_mm_s": 6.027,
+      "days_since_maintenance": 45.0,
+      "past_maintenance_events": 8.0
+    }
+  },
+  {
+    "machine_id": "M040",
+    "line": "Line_D",
+    "age_years": 9.3,
+    "risk_score": 0.321876,
+    "risk_level": "green",
+    "est_lost_units": 231725.74,
+    "priority_rank": 27,
+    "top_factors": [
+      "Vibration",
+      "Temperature (protective)",
+      "Machine age (protective)"
+    ],
+    "features": {
+      "machine_age_years": 9.3,
+      "operating_hours": 2.64,
+      "temperature_c": 68.19,
+      "vibration_mm_s": 4.466,
+      "days_since_maintenance": 86.0,
+      "past_maintenance_events": 5.0
+    }
+  },
+  {
+    "machine_id": "M037",
+    "line": "Line_A",
+    "age_years": 10.0,
+    "risk_score": 0.288374,
+    "risk_level": "green",
+    "est_lost_units": 208080.08,
+    "priority_rank": 28,
+    "top_factors": [
+      "Vibration (protective)",
+      "Days since maintenance",
+      "Machine age (protective)"
+    ],
+    "features": {
+      "machine_age_years": 10.0,
+      "operating_hours": 0.98,
+      "temperature_c": 74.24,
+      "vibration_mm_s": 2.568,
+      "days_since_maintenance": 101.0,
+      "past_maintenance_events": 2.0
+    }
+  },
+  {
+    "machine_id": "M003",
+    "line": "Line_A",
+    "age_years": 14.2,
+    "risk_score": 0.281212,
+    "risk_level": "green",
+    "est_lost_units": 202238.65,
+    "priority_rank": 29,
+    "top_factors": [
+      "Vibration (protective)",
+      "Days since maintenance (protective)",
+      "Temperature"
+    ],
+    "features": {
+      "machine_age_years": 14.2,
+      "operating_hours": 10.17,
+      "temperature_c": 84.4,
+      "vibration_mm_s": 1.904,
+      "days_since_maintenance": 59.0,
+      "past_maintenance_events": 0.0
+    }
+  },
+  {
+    "machine_id": "M023",
+    "line": "Line_B",
+    "age_years": 18.0,
+    "risk_score": 0.278066,
+    "risk_level": "green",
+    "est_lost_units": 200037.27,
+    "priority_rank": 30,
+    "top_factors": [
+      "Days since maintenance (protective)",
+      "Machine age",
+      "Vibration"
+    ],
+    "features": {
+      "machine_age_years": 18.0,
+      "operating_hours": 0.17,
+      "temperature_c": 60.13,
+      "vibration_mm_s": 4.755,
+      "days_since_maintenance": 12.0,
+      "past_maintenance_events": 3.0
+    }
+  },
+  {
+    "machine_id": "M029",
+    "line": "Line_C",
+    "age_years": 14.0,
+    "risk_score": 0.277153,
+    "risk_level": "green",
+    "est_lost_units": 199092.6,
+    "priority_rank": 32,
+    "top_factors": [
+      "Days since maintenance (protective)",
+      "Machine age",
+      "Vibration (protective)"
+    ],
+    "features": {
+      "machine_age_years": 14.0,
+      "operating_hours": 21.32,
+      "temperature_c": 74.63,
+      "vibration_mm_s": 3.051,
+      "days_since_maintenance": 62.0,
+      "past_maintenance_events": 3.0
+    }
+  },
+  {
+    "machine_id": "M026",
+    "line": "Line_A",
+    "age_years": 9.9,
+    "risk_score": 0.276765,
+    "risk_level": "green",
+    "est_lost_units": 199327.65,
+    "priority_rank": 31,
+    "top_factors": [
+      "Days since maintenance",
+      "Vibration (protective)",
+      "Temperature (protective)"
+    ],
+    "features": {
+      "machine_age_years": 9.9,
+      "operating_hours": 2.98,
+      "temperature_c": 67.63,
+      "vibration_mm_s": 2.619,
+      "days_since_maintenance": 132.0,
+      "past_maintenance_events": 6.0
+    }
+  },
+  {
+    "machine_id": "M010",
+    "line": "Line_B",
+    "age_years": 8.0,
+    "risk_score": 0.275741,
+    "risk_level": "green",
+    "est_lost_units": 198848.76,
+    "priority_rank": 33,
+    "top_factors": [
+      "Vibration",
+      "Days since maintenance (protective)",
+      "Machine age (protective)"
+    ],
+    "features": {
+      "machine_age_years": 8.0,
+      "operating_hours": 12.37,
+      "temperature_c": 73.34,
+      "vibration_mm_s": 5.863,
+      "days_since_maintenance": 14.0,
+      "past_maintenance_events": 4.0
+    }
+  },
+  {
+    "machine_id": "M021",
+    "line": "Line_C",
+    "age_years": 7.7,
+    "risk_score": 0.271492,
+    "risk_level": "green",
+    "est_lost_units": 195825.84,
+    "priority_rank": 34,
+    "top_factors": [
+      "Temperature (protective)",
+      "Machine age (protective)",
+      "Days since maintenance"
+    ],
+    "features": {
+      "machine_age_years": 7.7,
+      "operating_hours": 3.88,
+      "temperature_c": 58.5,
+      "vibration_mm_s": 3.8659999999999997,
+      "days_since_maintenance": 106.0,
+      "past_maintenance_events": 2.0
+    }
+  },
+  {
+    "machine_id": "M008",
+    "line": "Line_B",
+    "age_years": 3.4,
+    "risk_score": 0.265672,
+    "risk_level": "green",
+    "est_lost_units": 191196.13,
+    "priority_rank": 35,
+    "top_factors": [
+      "Machine age (protective)",
+      "Vibration (protective)",
+      "Temperature"
+    ],
+    "features": {
+      "machine_age_years": 3.4,
+      "operating_hours": 23.63,
+      "temperature_c": 86.63,
+      "vibration_mm_s": 2.3,
+      "days_since_maintenance": 117.0,
+      "past_maintenance_events": 2.0
+    }
+  },
+  {
+    "machine_id": "M002",
+    "line": "Line_D",
+    "age_years": 17.3,
+    "risk_score": 0.263774,
+    "risk_level": "green",
+    "est_lost_units": 189870.05,
+    "priority_rank": 36,
+    "top_factors": [
+      "Vibration (protective)",
+      "Machine age",
+      "Temperature"
+    ],
+    "features": {
+      "machine_age_years": 17.3,
+      "operating_hours": 15.61,
+      "temperature_c": 88.07000000000001,
+      "vibration_mm_s": 1.2160000000000002,
+      "days_since_maintenance": 61.0,
+      "past_maintenance_events": 3.0
+    }
+  },
+  {
+    "machine_id": "M019",
+    "line": "Line_A",
+    "age_years": 13.0,
+    "risk_score": 0.227989,
+    "risk_level": "green",
+    "est_lost_units": 164465.16,
+    "priority_rank": 37,
+    "top_factors": [
+      "Vibration (protective)",
+      "Temperature (protective)",
+      "Machine age"
+    ],
+    "features": {
+      "machine_age_years": 13.0,
+      "operating_hours": 2.17,
+      "temperature_c": 69.33,
+      "vibration_mm_s": 2.05,
+      "days_since_maintenance": 80.0,
+      "past_maintenance_events": 1.0
+    }
+  },
+  {
+    "machine_id": "M032",
+    "line": "Line_A",
+    "age_years": 7.2,
+    "risk_score": 0.20832,
+    "risk_level": "green",
+    "est_lost_units": 150050.0,
+    "priority_rank": 38,
+    "top_factors": [
+      "Days since maintenance (protective)",
+      "Machine age (protective)",
+      "Past maintenance events"
+    ],
+    "features": {
+      "machine_age_years": 7.2,
+      "operating_hours": 17.04,
+      "temperature_c": 70.64,
+      "vibration_mm_s": 3.4059999999999997,
+      "days_since_maintenance": 63.0,
+      "past_maintenance_events": 1.0
+    }
+  },
+  {
+    "machine_id": "M016",
+    "line": "Line_A",
+    "age_years": 11.5,
+    "risk_score": 0.170841,
+    "risk_level": "green",
+    "est_lost_units": 122897.7,
+    "priority_rank": 39,
+    "top_factors": [
+      "Vibration (protective)",
+      "Days since maintenance (protective)",
+      "Past maintenance events (protective)"
+    ],
+    "features": {
+      "machine_age_years": 11.5,
+      "operating_hours": 3.04,
+      "temperature_c": 75.41999999999999,
+      "vibration_mm_s": 1.5979999999999999,
+      "days_since_maintenance": 75.0,
+      "past_maintenance_events": 4.0
+    }
+  },
+  {
+    "machine_id": "M035",
+    "line": "Line_B",
+    "age_years": 4.6,
+    "risk_score": 0.165164,
+    "risk_level": "green",
+    "est_lost_units": 118862.33,
+    "priority_rank": 40,
+    "top_factors": [
+      "Vibration (protective)",
+      "Temperature",
+      "Machine age (protective)"
+    ],
+    "features": {
+      "machine_age_years": 4.6,
+      "operating_hours": 16.35,
+      "temperature_c": 95.38000000000001,
+      "vibration_mm_s": 1.853,
+      "days_since_maintenance": 56.0,
+      "past_maintenance_events": 3.0
+    }
+  },
+  {
+    "machine_id": "M004",
+    "line": "Line_D",
+    "age_years": 2.8,
+    "risk_score": 0.155611,
+    "risk_level": "green",
+    "est_lost_units": 112130.34,
+    "priority_rank": 41,
+    "top_factors": [
+      "Vibration (protective)",
+      "Machine age (protective)",
+      "Days since maintenance"
+    ],
+    "features": {
+      "machine_age_years": 2.8,
+      "operating_hours": 6.63,
+      "temperature_c": 77.13000000000001,
+      "vibration_mm_s": 1.1829999999999998,
+      "days_since_maintenance": 123.0,
+      "past_maintenance_events": 2.0
+    }
+  },
+  {
+    "machine_id": "M009",
+    "line": "Line_C",
+    "age_years": 9.6,
+    "risk_score": 0.153834,
+    "risk_level": "green",
+    "est_lost_units": 110741.9,
+    "priority_rank": 42,
+    "top_factors": [
+      "Days since maintenance (protective)",
+      "Vibration",
+      "Temperature (protective)"
+    ],
+    "features": {
+      "machine_age_years": 9.6,
+      "operating_hours": 8.42,
+      "temperature_c": 63.7,
+      "vibration_mm_s": 4.686,
+      "days_since_maintenance": 10.0,
+      "past_maintenance_events": 5.0
+    }
+  },
+  {
+    "machine_id": "M027",
+    "line": "Line_D",
+    "age_years": 1.8,
+    "risk_score": 0.153192,
+    "risk_level": "green",
+    "est_lost_units": 110186.79,
+    "priority_rank": 43,
+    "top_factors": [
+      "Vibration (protective)",
+      "Days since maintenance",
+      "Machine age (protective)"
+    ],
+    "features": {
+      "machine_age_years": 1.8,
+      "operating_hours": 6.17,
+      "temperature_c": 70.76,
+      "vibration_mm_s": 1.057,
+      "days_since_maintenance": 153.0,
+      "past_maintenance_events": 3.0
+    }
+  },
+  {
+    "machine_id": "M025",
+    "line": "Line_C",
+    "age_years": 4.7,
+    "risk_score": 0.152108,
+    "risk_level": "green",
+    "est_lost_units": 109477.93,
+    "priority_rank": 44,
+    "top_factors": [
+      "Vibration (protective)",
+      "Machine age (protective)",
+      "Temperature"
+    ],
+    "features": {
+      "machine_age_years": 4.7,
+      "operating_hours": 15.0,
+      "temperature_c": 86.63,
+      "vibration_mm_s": 2.03,
+      "days_since_maintenance": 68.0,
+      "past_maintenance_events": 4.0
+    }
+  },
+  {
+    "machine_id": "M043",
+    "line": "Line_B",
+    "age_years": 6.9,
+    "risk_score": 0.142212,
+    "risk_level": "green",
+    "est_lost_units": 102320.35,
+    "priority_rank": 45,
+    "top_factors": [
+      "Days since maintenance (protective)",
+      "Machine age (protective)",
+      "Vibration"
+    ],
+    "features": {
+      "machine_age_years": 6.9,
+      "operating_hours": 5.58,
+      "temperature_c": 75.73,
+      "vibration_mm_s": 3.9490000000000003,
+      "days_since_maintenance": 4.0,
+      "past_maintenance_events": 3.0
+    }
+  },
+  {
+    "machine_id": "M038",
+    "line": "Line_B",
+    "age_years": 5.3,
+    "risk_score": 0.114392,
+    "risk_level": "green",
+    "est_lost_units": 82314.7,
+    "priority_rank": 46,
+    "top_factors": [
+      "Days since maintenance (protective)",
+      "Machine age (protective)",
+      "Temperature (protective)"
+    ],
+    "features": {
+      "machine_age_years": 5.3,
+      "operating_hours": 20.27,
+      "temperature_c": 64.49,
+      "vibration_mm_s": 3.341,
+      "days_since_maintenance": 30.0,
+      "past_maintenance_events": 0.0
+    }
+  },
+  {
+    "machine_id": "M049",
+    "line": "Line_A",
+    "age_years": 3.7,
+    "risk_score": 0.09736,
+    "risk_level": "green",
+    "est_lost_units": 70123.8,
+    "priority_rank": 47,
+    "top_factors": [
+      "Days since maintenance (protective)",
+      "Machine age (protective)",
+      "Temperature (protective)"
+    ],
+    "features": {
+      "machine_age_years": 3.7,
+      "operating_hours": 17.97,
+      "temperature_c": 69.4,
+      "vibration_mm_s": 3.366,
+      "days_since_maintenance": 27.0,
+      "past_maintenance_events": 3.0
+    }
+  },
+  {
+    "machine_id": "M034",
+    "line": "Line_D",
+    "age_years": 9.9,
+    "risk_score": 0.097066,
+    "risk_level": "green",
+    "est_lost_units": 69864.37,
+    "priority_rank": 48,
+    "top_factors": [
+      "Vibration (protective)",
+      "Temperature (protective)",
+      "Past maintenance events (protective)"
+    ],
+    "features": {
+      "machine_age_years": 9.9,
+      "operating_hours": 3.51,
+      "temperature_c": 63.22,
+      "vibration_mm_s": 0.8240000000000001,
+      "days_since_maintenance": 108.0,
+      "past_maintenance_events": 8.0
+    }
+  },
+  {
+    "machine_id": "M017",
+    "line": "Line_A",
+    "age_years": 2.2,
+    "risk_score": 0.059721,
+    "risk_level": "green",
+    "est_lost_units": 42966.55,
+    "priority_rank": 49,
+    "top_factors": [
+      "Vibration (protective)",
+      "Machine age (protective)",
+      "Days since maintenance"
+    ],
+    "features": {
+      "machine_age_years": 2.2,
+      "operating_hours": 16.6,
+      "temperature_c": 71.53,
+      "vibration_mm_s": 0.187,
+      "days_since_maintenance": 98.0,
+      "past_maintenance_events": 4.0
+    }
+  },
+  {
+    "machine_id": "M036",
+    "line": "Line_C",
+    "age_years": 3.5,
+    "risk_score": 0.047403,
+    "risk_level": "green",
+    "est_lost_units": 34223.17,
+    "priority_rank": 50,
+    "top_factors": [
+      "Vibration (protective)",
+      "Machine age (protective)",
+      "Days since maintenance (protective)"
+    ],
+    "features": {
+      "machine_age_years": 3.5,
+      "operating_hours": 20.41,
+      "temperature_c": 74.76,
+      "vibration_mm_s": 0.401,
+      "days_since_maintenance": 45.0,
+      "past_maintenance_events": 2.0
+    }
+  }
+]

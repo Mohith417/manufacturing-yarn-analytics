@@ -179,10 +179,11 @@ Reads only exported files → `docs/figures/*.png` (production trend, downtime p
 machine, defect-rate distribution, correlation heatmap, feature importance,
 confusion matrix). **Check:** 6 PNGs with titles/axis labels, opened by eye.
 
-### Phase 9 — Dashboard (`dashboard/app.py`)
-Reads only `dashboard/data/*.csv`: KPI cards, 6 charts, machine selector with
-risk score, visible "synthetic data" note. **Check:** `streamlit run` works with
-the cluster stopped.
+### Phase 9 — Dashboard
+Shipped as the React front end in `dashboard/` (the Streamlit prototype originally
+planned here is archived in `legacy/streamlit/`). Both read only exported files:
+KPI cards, charts, machine selector with risk score, visible "synthetic data"
+note. **Check:** the dashboard works with the cluster stopped.
 
 ### Phase 10 — Docs
 README (overview, Mermaid architecture, prerequisites, Windows setup, UI

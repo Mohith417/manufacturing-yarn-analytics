@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="YarnLens logo">
+  <rect width="64" height="64" rx="16" fill="#6C4CF1"/>
+  <!-- yarn spool: a barrel with wound thread -->
+  <path d="M22 14h20v36H22z" fill="#FFFFFF" opacity="0.16"/>
+  <path d="M22 14h20M22 50h20" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
+  <!-- thread unwinding into a rising data line -->
+  <path d="M22 22c6 0 6 6 12 6s6-6 12-6" stroke="#FFFFFF" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.65"/>
+  <path d="M22 31c6 0 6 6 12 6s6-6 12-6" stroke="#FFFFFF" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.45"/>
+  <path d="M34 44l4-8 4 4 6-10" stroke="#FFFFFF" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="48" cy="30" r="2.6" fill="#FFFFFF"/>
+</svg>

@@ -1,0 +1,302 @@
+[
+  {
+    "machine_id": "M031",
+    "line": "Line_C",
+    "downtime_count": 1363,
+    "downtime_rate": 0.138277
+  },
+  {
+    "machine_id": "M022",
+    "line": "Line_C",
+    "downtime_count": 1360,
+    "downtime_rate": 0.137042
+  },
+  {
+    "machine_id": "M005",
+    "line": "Line_D",
+    "downtime_count": 1362,
+    "downtime_rate": 0.134811
+  },
+  {
+    "machine_id": "M011",
+    "line": "Line_D",
+    "downtime_count": 1301,
+    "downtime_rate": 0.131321
+  },
+  {
+    "machine_id": "M023",
+    "line": "Line_B",
+    "downtime_count": 1261,
+    "downtime_rate": 0.127451
+  },
+  {
+    "machine_id": "M002",
+    "line": "Line_D",
+    "downtime_count": 1136,
+    "downtime_rate": 0.115342
+  },
+  {
+    "machine_id": "M013",
+    "line": "Line_B",
+    "downtime_count": 1124,
+    "downtime_rate": 0.113227
+  },
+  {
+    "machine_id": "M018",
+    "line": "Line_A",
+    "downtime_count": 1100,
+    "downtime_rate": 0.112601
+  },
+  {
+    "machine_id": "M041",
+    "line": "Line_A",
+    "downtime_count": 1092,
+    "downtime_rate": 0.11192
+  },
+  {
+    "machine_id": "M044",
+    "line": "Line_D",
+    "downtime_count": 1064,
+    "downtime_rate": 0.108949
+  },
+  {
+    "machine_id": "M045",
+    "line": "Line_D",
+    "downtime_count": 1054,
+    "downtime_rate": 0.106336
+  },
+  {
+    "machine_id": "M007",
+    "line": "Line_C",
+    "downtime_count": 1037,
+    "downtime_rate": 0.10544
+  },
+  {
+    "machine_id": "M006",
+    "line": "Line_D",
+    "downtime_count": 1024,
+    "downtime_rate": 0.103602
+  },
+  {
+    "machine_id": "M024",
+    "line": "Line_D",
+    "downtime_count": 1005,
+    "downtime_rate": 0.102103
+  },
+  {
+    "machine_id": "M000",
+    "line": "Line_D",
+    "downtime_count": 992,
+    "downtime_rate": 0.100844
+  },
+  {
+    "machine_id": "M020",
+    "line": "Line_B",
+    "downtime_count": 991,
+    "downtime_rate": 0.099478
+  },
+  {
+    "machine_id": "M030",
+    "line": "Line_C",
+    "downtime_count": 935,
+    "downtime_rate": 0.09478
+  },
+  {
+    "machine_id": "M003",
+    "line": "Line_A",
+    "downtime_count": 929,
+    "downtime_rate": 0.091898
+  },
+  {
+    "machine_id": "M048",
+    "line": "Line_D",
+    "downtime_count": 901,
+    "downtime_rate": 0.09019
+  },
+  {
+    "machine_id": "M042",
+    "line": "Line_B",
+    "downtime_count": 880,
+    "downtime_rate": 0.089549
+  },
+  {
+    "machine_id": "M029",
+    "line": "Line_C",
+    "downtime_count": 863,
+    "downtime_rate": 0.0869
+  },
+  {
+    "machine_id": "M012",
+    "line": "Line_C",
+    "downtime_count": 846,
+    "downtime_rate": 0.084676
+  },
+  {
+    "machine_id": "M039",
+    "line": "Line_B",
+    "downtime_count": 825,
+    "downtime_rate": 0.08269
+  },
+  {
+    "machine_id": "M019",
+    "line": "Line_A",
+    "downtime_count": 799,
+    "downtime_rate": 0.081865
+  },
+  {
+    "machine_id": "M016",
+    "line": "Line_A",
+    "downtime_count": 743,
+    "downtime_rate": 0.076158
+  },
+  {
+    "machine_id": "M037",
+    "line": "Line_A",
+    "downtime_count": 638,
+    "downtime_rate": 0.064366
+  },
+  {
+    "machine_id": "M034",
+    "line": "Line_D",
+    "downtime_count": 616,
+    "downtime_rate": 0.061966
+  },
+  {
+    "machine_id": "M026",
+    "line": "Line_A",
+    "downtime_count": 615,
+    "downtime_rate": 0.061834
+  },
+  {
+    "machine_id": "M009",
+    "line": "Line_C",
+    "downtime_count": 618,
+    "downtime_rate": 0.061831
+  },
+  {
+    "machine_id": "M040",
+    "line": "Line_D",
+    "downtime_count": 590,
+    "downtime_rate": 0.059213
+  },
+  {
+    "machine_id": "M001",
+    "line": "Line_A",
+    "downtime_count": 549,
+    "downtime_rate": 0.055719
+  },
+  {
+    "machine_id": "M046",
+    "line": "Line_A",
+    "downtime_count": 539,
+    "downtime_rate": 0.05434
+  },
+  {
+    "machine_id": "M014",
+    "line": "Line_C",
+    "downtime_count": 521,
+    "downtime_rate": 0.053337
+  },
+  {
+    "machine_id": "M021",
+    "line": "Line_C",
+    "downtime_count": 520,
+    "downtime_rate": 0.052637
+  },
+  {
+    "machine_id": "M033",
+    "line": "Line_C",
+    "downtime_count": 515,
+    "downtime_rate": 0.052407
+  },
+  {
+    "machine_id": "M010",
+    "line": "Line_B",
+    "downtime_count": 517,
+    "downtime_rate": 0.052333
+  },
+  {
+    "machine_id": "M047",
+    "line": "Line_A",
+    "downtime_count": 469,
+    "downtime_rate": 0.047857
+  },
+  {
+    "machine_id": "M032",
+    "line": "Line_A",
+    "downtime_count": 468,
+    "downtime_rate": 0.046861
+  },
+  {
+    "machine_id": "M043",
+    "line": "Line_B",
+    "downtime_count": 464,
+    "downtime_rate": 0.046765
+  },
+  {
+    "machine_id": "M038",
+    "line": "Line_B",
+    "downtime_count": 422,
+    "downtime_rate": 0.042124
+  },
+  {
+    "machine_id": "M015",
+    "line": "Line_C",
+    "downtime_count": 389,
+    "downtime_rate": 0.039561
+  },
+  {
+    "machine_id": "M035",
+    "line": "Line_B",
+    "downtime_count": 377,
+    "downtime_rate": 0.037527
+  },
+  {
+    "machine_id": "M025",
+    "line": "Line_C",
+    "downtime_count": 350,
+    "downtime_rate": 0.0354
+  },
+  {
+    "machine_id": "M008",
+    "line": "Line_B",
+    "downtime_count": 346,
+    "downtime_rate": 0.034763
+  },
+  {
+    "machine_id": "M028",
+    "line": "Line_C",
+    "downtime_count": 337,
+    "downtime_rate": 0.034161
+  },
+  {
+    "machine_id": "M049",
+    "line": "Line_A",
+    "downtime_count": 311,
+    "downtime_rate": 0.031228
+  },
+  {
+    "machine_id": "M036",
+    "line": "Line_C",
+    "downtime_count": 310,
+    "downtime_rate": 0.03119
+  },
+  {
+    "machine_id": "M027",
+    "line": "Line_D",
+    "downtime_count": 308,
+    "downtime_rate": 0.031127
+  },
+  {
+    "machine_id": "M017",
+    "line": "Line_A",
+    "downtime_count": 305,
+    "downtime_rate": 0.030583
+  },
+  {
+    "machine_id": "M004",
+    "line": "Line_D",
+    "downtime_count": 288,
+    "downtime_rate": 0.029364
+  }
+]

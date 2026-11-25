@@ -1,9 +1,11 @@
-"""Phase 9 - Streamlit dashboard.
+"""Phase 9 - Streamlit dashboard (legacy prototype).
+
+Superseded by the React front end in dashboard/ and kept for reference.
 
 Runs on Windows with the local venv and NO cluster:
 
     .venv\\Scripts\\Activate.ps1
-    streamlit run dashboard\\app.py
+    streamlit run legacy\\streamlit\\app.py
 
 It reads only the small CSVs in dashboard/data/, which the Spark jobs exported
 from HDFS. The dashboard must never talk to HDFS/YARN - if the cluster is off,
@@ -22,7 +24,8 @@ import pandas as pd
 import seaborn as sns
 import streamlit as st
 
-DATA_DIR = Path(__file__).resolve().parent / "data"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DATA_DIR = REPO_ROOT / "dashboard" / "data"
 
 st.set_page_config(page_title="Manufacturing Analytics (YARN)", layout="wide")
 
