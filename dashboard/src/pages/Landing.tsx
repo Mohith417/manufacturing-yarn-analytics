@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import "../styles-landing.css";
+import GeoShapes, { GeoGlyph, type GeoGlyphKind } from "../components/GeoShapes";
 import Icon from "../components/Icon";
 import LogoMark from "../components/Logo";
 import {
@@ -12,54 +13,38 @@ import {
   type MachineRisk,
   type ModelMetric,
 } from "../lib/data";
+import { topByRisk } from "../lib/derive";
 import type { PageId } from "../lib/nav";
 
-const ABOUT: { title: string; summary: string; more: string }[] = [
+const FEATURES: {
+  title: string;
+  summary: string;
+  more: string;
+  glyph: GeoGlyphKind;
+}[] = [
   {
     title: "One ranked list",
     summary: "Every machine, highest chance of breakdown first.",
     more: "The first name is the one to check. The rest are already in order, so nobody compares charts before a shift.",
+    glyph: "circle",
   },
   {
     title: "The reason, in words",
     summary: "Vibration, machine age or a long service gap.",
     more: "Each score names its main driver, so a check starts with a hypothesis instead of a guess.",
+    glyph: "triangle",
   },
   {
     title: "Its mistakes on show",
     summary: "Precision, recall and the breakdowns it missed.",
     more: "The accuracy page prints the misses beside the hits. Nothing is hidden to make the number look better.",
+    glyph: "square",
   },
   {
     title: "Yours to open",
-    summary: "Five pages, one plant, no account needed.",
+    summary: "Five dashboard pages, no account needed.",
     more: "Today, machines, quality, accuracy and the method. Every page starts with the question it answers.",
-  },
-];
-
-const FEATURES: { title: string; summary: string; more: string }[] = [
-  {
-    title: "It names the reason",
-    summary:
-      "Every score carries the reading behind it — vibration, machine age, days since service.",
-    more: "Open a machine and the same driver is spelled out again, with the check worth doing.",
-  },
-  {
-    title: "It shows its errors",
-    summary:
-      "Recall, precision and a confusion matrix that includes every missed breakdown.",
-    more: "A low precision is printed, not hidden. You decide whether an alarm is worth the walk.",
-  },
-  {
-    title: "It explains itself",
-    summary:
-      "The pipeline, the cluster versions and the limits are pages you can read, not a footnote.",
-    more: "HDFS, YARN, Spark and the exported JSON: every step between a sensor and this screen is traceable.",
-  },
-  {
-    title: "It opens from a folder",
-    summary: "Static files only. No API, no database, no live query to the cluster.",
-    more: "Drop the export into public/data and the whole report follows it — nothing else to run.",
+    glyph: "ring",
   },
 ];
 
@@ -125,7 +110,6 @@ export default function Landing({
   const metrics = useJson<ModelMetric[]>("model_metrics");
   const [step, setStep] = useState(0);
   const [scrolled, setScrolled] = useState(false);
-  const [aboutOpen, setAboutOpen] = useState(-1);
 
   const best = useMemo(() => {
     const rows = metrics.data ?? [];
@@ -134,6 +118,13 @@ export default function Landing({
       null,
     );
   }, [metrics.data]);
+
+  const lines = useMemo(
+    () => new Set(machines.map((machine) => machine.line)).size,
+    [machines],
+  );
+
+  const watch = useMemo(() => topByRisk(machines, 3), [machines]);
 
   useEffect(() => {
     const nodes = Array.from(document.querySelectorAll<HTMLElement>(".landing .yl-reveal"));
@@ -183,21 +174,21 @@ export default function Landing({
         Skip to content
       </a>
 
-      <header className={`yl-header${scrolled ? " is-scrolled" : ""}`}>
-        <div className="yl-wrap yl-header__inner">
+      <header className={`geo-header${scrolled ? " is-scrolled" : ""}`}>
+        <div className="geo-wrap geo-header__inner">
           <button
             type="button"
-            className="yl-brand"
+            className="geo-brand"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             aria-label="YarnLens, back to top"
           >
-            <span className="yl-brand__mark">
+            <span className="geo-brand__mark">
               <LogoMark />
             </span>
-            <span className="yl-brand__name">YarnLens</span>
+            <span className="geo-brand__name">YarnLens</span>
           </button>
 
-          <nav className="yl-nav" aria-label="Sections">
+          <nav className="geo-nav" aria-label="Sections">
             <button type="button" onClick={() => scrollToSection("what")}>
               What you get
             </button>
@@ -209,103 +200,133 @@ export default function Landing({
             </button>
           </nav>
 
-          <div className="yl-header__end">
+          <div className="geo-header__end">
             <button
               type="button"
-              className="yl-icon"
+              className="geo-icon"
               onClick={onToggleTheme}
               aria-label={resolved === "dark" ? "Switch to light theme" : "Switch to dark theme"}
               title={resolved === "dark" ? "Light theme" : "Dark theme"}
             >
               <Icon name={resolved === "dark" ? "sun" : "moon"} size={16} />
             </button>
+            <button
+              type="button"
+              className="geo-btn geo-btn--primary geo-btn--sm"
+              onClick={() => onNavigate("today")}
+            >
+              Open dashboard <span aria-hidden="true">→</span>
+            </button>
           </div>
         </div>
       </header>
 
       <main id="main" tabIndex={-1}>
-        <section className="yl-hero">
-          <div className="yl-wrap">
-            <div className="yl-hero__grid">
-              <div className="yl-hero__copy">
-                <p className="yl-eyebrow">
-                  <span className="yl-eyebrow__square" aria-hidden="true" />
+        {/* ------------------------------------------------------------- hero */}
+        <section className="geo-hero">
+          <div className="geo-wrap">
+            <div className="geo-hero__grid">
+              <div className="geo-hero__copy">
+                <p className="geo-chip">
+                  <span className="geo-chip__dot" aria-hidden="true" />
                   Synthetic plant · morning report
                 </p>
 
-                <h1 className="yl-hero__title">
-                  <span className="yl-hero__count">
+                <h1 className="geo-hero__title">
+                  <span className="geo-hero__count">
                     {loading ? "—" : (kpis?.high_risk_count ?? "—")}
-                  </span>{" "}
-                  machines
-                  <br />
-                  need a look today.
+                  </span>
+                  <span className="geo-hero__head">
+                    machines need a <em>look</em> today.
+                  </span>
                 </h1>
 
-                <p className="yl-hero__sub">
+                <p className="geo-hero__sub">
                   YarnLens reads every production minute from a small Hadoop and Spark
                   cluster, scores each machine on its chance of downtime, and puts the
                   ones worth checking at the top. Every figure on this page comes from
                   those exported files and nothing else.
                 </p>
 
-                <div className="yl-hero__actions">
+                <div className="geo-hero__actions">
                   <button
                     type="button"
-                    className="yl-btn yl-btn--solid"
+                    className="geo-btn geo-btn--primary"
                     onClick={() => onNavigate("today")}
                   >
                     Read today's report <span aria-hidden="true">→</span>
                   </button>
+                  <button
+                    type="button"
+                    className="geo-btn geo-btn--ghost"
+                    onClick={() => scrollToSection("pipeline")}
+                  >
+                    How it works
+                  </button>
                 </div>
+
+                <p className="geo-hero__meta">
+                  {loading
+                    ? "reading the export…"
+                    : `${formatInt(machines.length)} machines · ${lines} lines · ${
+                        kpis ? formatPct(kpis.downtime_rate, 1) : "—"
+                      } downtime`}
+                </p>
               </div>
 
-              <aside className="yl-about" aria-label="What YarnLens does">
-                <div className="yl-about__head">
-                  <span className="yl-live">
-                    <i aria-hidden="true" />
-                    Built for the shift
-                  </span>
-                  <span className="yl-mono">
-                    {loading ? "reading" : `${machines.length} machines · 4 lines`}
-                  </span>
-                </div>
+              <div className="geo-stage">
+                <GeoShapes />
 
-                <ul className="yl-about__list">
-                  {ABOUT.map((item, index) => (
-                    <li key={item.title}>
-                      <button
-                        type="button"
-                        className={`yl-about__row${aboutOpen === index ? " is-open" : ""}`}
-                        aria-expanded={aboutOpen === index}
-                        onClick={() => setAboutOpen(aboutOpen === index ? -1 : index)}
-                      >
-                        <span className="yl-about__num">
-                          {String(index + 1).padStart(2, "0")}
-                        </span>
-                        <span className="yl-about__main">
-                          <strong>{item.title}</strong>
-                          <span>{item.summary}</span>
-                        </span>
-                        <span className="yl-about__chev" aria-hidden="true">
-                          +
-                        </span>
-                        <span className="yl-about__more">
-                          <span>{item.more}</span>
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                <div className="geo-stage__card">
+                  <div className="geo-stage__head">
+                    <span className="geo-mono">Watch list</span>
+                    <span className="geo-mono">
+                      top {watch.length} of {loading ? "—" : machines.length}
+                    </span>
+                  </div>
 
-                <div className="yl-about__foot">
-                  <span>Hover or tap a line for the detail</span>
-                  <span className="yl-mono">No live cluster</span>
+                  {loading ? (
+                    <p className="geo-stage__empty">Reading machine scores…</p>
+                  ) : watch.length === 0 ? (
+                    <p className="geo-stage__empty">No machine scores are exported yet.</p>
+                  ) : (
+                    <ol className="geo-watch">
+                      {watch.map((machine, index) => (
+                        <li key={machine.machine_id}>
+                          <span className="geo-watch__rank">
+                            {String(index + 1).padStart(2, "0")}
+                          </span>
+                          <span className="geo-watch__id">
+                            <strong>{machine.machine_id}</strong>
+                            <small>{machine.line.replace("_", " ")}</small>
+                          </span>
+                          <span className="geo-watch__pct">
+                            {Math.round(machine.risk_score * 100)}%
+                          </span>
+                          <span className="geo-watch__bar" aria-hidden="true">
+                            <i
+                              style={{
+                                width: `${Math.min(100, Math.round(machine.risk_score * 100))}%`,
+                              }}
+                            />
+                          </span>
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+
+                  <button
+                    type="button"
+                    className="geo-stage__link"
+                    onClick={() => onNavigate("today")}
+                  >
+                    Open the full dashboard <span aria-hidden="true">→</span>
+                  </button>
                 </div>
-              </aside>
+              </div>
             </div>
 
-            <dl className="yl-band">
+            <dl className="geo-band">
               <div>
                 <dt>Machines</dt>
                 <dd>{loading ? "—" : formatInt(machines.length)}</dd>
@@ -335,93 +356,87 @@ export default function Landing({
         </section>
 
         {/* ----------------------------------------------------------- what */}
-        <section className="yl-section" id="what">
-          <div className="yl-wrap">
-            <div className="yl-head yl-reveal">
-              <p className="yl-kicker">01 / what you get</p>
-              <h2 className="yl-h2">A morning brief, not a chart wall.</h2>
-              <p className="yl-lede">
+        <section className="geo-section" id="what">
+          <div className="geo-wrap">
+            <div className="geo-head yl-reveal">
+              <p className="geo-kicker">01 / what you get</p>
+              <h2 className="geo-h2">A morning brief, not a chart wall.</h2>
+              <p className="geo-lede">
                 Four things this dashboard does that a folder of exports does not. Each
                 card carries the part that matters on the floor.
               </p>
             </div>
 
-            <ul className="yl-features yl-reveal">
+            <ul className="geo-cards yl-reveal">
               {FEATURES.map((item, index) => (
-                <li className="yl-feature" key={item.title}>
-                  <span className="yl-feature__top">
-                    <span className="yl-feature__num">
+                <li className="geo-card" key={item.title}>
+                  <div className="geo-card__top">
+                    <GeoGlyph kind={item.glyph} />
+                    <span className="geo-card__num">
                       {String(index + 1).padStart(2, "0")}
                     </span>
-                    <span className="yl-feature__glyph" aria-hidden="true">
-                      <i />
-                      <i />
-                      <i />
-                      <i />
-                    </span>
-                  </span>
+                  </div>
                   <h3>{item.title}</h3>
-                  <p>{item.summary}</p>
-                  <span className="yl-feature__more">{item.more}</span>
-                  <span className="yl-feature__hint" aria-hidden="true">
-                    Why it matters <i>→</i>
-                  </span>
+                  <p className="geo-card__summary">{item.summary}</p>
+                  <p className="geo-card__more">{item.more}</p>
                 </li>
               ))}
             </ul>
 
-            <p className="yl-fine yl-reveal">
+            <p className="geo-fine yl-reveal">
               A score ranks machines for a human to check. It is a rule of thumb, not a
               diagnosis — the dashboard says so wherever a score appears.
             </p>
           </div>
         </section>
 
-        {/* --------------------------------------------------------- pipeline */}
-        <section className="yl-section" id="pipeline">
-          <div className="yl-wrap">
-            <div className="yl-head yl-reveal">
-              <p className="yl-kicker">02 / pipeline</p>
-              <h2 className="yl-h2">From a sensor line to a sentence.</h2>
-              <p className="yl-lede">
-                Five steps, all in the repository. Pick a step to see what happens
-                inside it.
+        {/* ------------------------------------------------------- pipeline */}
+        <section className="geo-section geo-section--tint" id="pipeline">
+          <div className="geo-wrap">
+            <div className="geo-head yl-reveal">
+              <p className="geo-kicker">02 / pipeline</p>
+              <h2 className="geo-h2">From a sensor line to a sentence.</h2>
+              <p className="geo-lede">
+                Five steps, all in the repository. Pick a step to see what happens inside
+                it.
               </p>
             </div>
 
-            <div className="yl-flow yl-reveal">
-              <ol className="yl-stations">
+            <div className="geo-flow yl-reveal">
+              <ol className="geo-stations">
                 {STEPS.map((item, index) => (
                   <li key={item.title}>
                     <button
                       type="button"
-                      className={`yl-station${step === index ? " is-active" : ""}`}
+                      className={`geo-station${step === index ? " is-active" : ""}`}
                       onClick={() => setStep(index)}
                       onMouseEnter={() => setStep(index)}
                       onFocus={() => setStep(index)}
                       aria-pressed={step === index}
                     >
-                      <span className="yl-station__dot" aria-hidden="true" />
-                      <span className="yl-station__title">{item.title}</span>
-                      <span className="yl-station__ledger yl-mono">{item.ledger}</span>
+                      <span className="geo-station__num">{index + 1}</span>
+                      <span className="geo-station__title">{item.title}</span>
+                      <span className="geo-station__ledger">{item.ledger}</span>
                     </button>
                   </li>
                 ))}
               </ol>
 
-              <div className="yl-flow__read" aria-live="polite">
-                <div className="yl-flow__meta">
-                  <span className="yl-mono">
+              <div className="geo-flow__read" aria-live="polite">
+                <div className="geo-flow__meta">
+                  <span className="geo-mono">
                     Step {step + 1} of {STEPS.length}
                   </span>
-                  <span className="yl-flow__tags">
+                  <span className="geo-tags">
                     {STEPS[step].tags.map((tag) => (
                       <em key={tag}>{tag}</em>
                     ))}
                   </span>
                 </div>
-                <p className="yl-flow__body">{STEPS[step].body}</p>
-                <dl className="yl-flow__facts">
+
+                <p className="geo-flow__body">{STEPS[step].body}</p>
+
+                <dl className="geo-flow__facts">
                   <div>
                     <dt>Nodes</dt>
                     <dd>{cluster.data?.nodes ?? "—"}</dd>
@@ -444,47 +459,49 @@ export default function Landing({
           </div>
         </section>
 
-        {/* ------------------------------------------------------------ model */}
-        <section className="yl-section yl-section--ink" id="model">
-          <div className="yl-wrap yl-model">
-            <div className="yl-model__quote yl-reveal">
-              <p className="yl-kicker is-light">03 / the model</p>
+        {/* ---------------------------------------------------------- model */}
+        <section className="geo-section geo-section--ink" id="model">
+          <GeoShapes variant="band" />
+
+          <div className="geo-wrap geo-model">
+            <div className="geo-model__quote yl-reveal">
+              <p className="geo-kicker geo-kicker--light">03 / the model</p>
               <blockquote>
                 “It ranks machines for a human to check. It does not know what is wrong
                 with the machine.”
               </blockquote>
-              <p className="yl-model__by">
+              <p className="geo-model__by">
                 The rule printed beside every score in the dashboard.
               </p>
             </div>
 
-            <div className="yl-model__table yl-reveal">
-              <div className="yl-model__row is-head">
+            <div className="geo-model__panel yl-reveal">
+              <div className="geo-model__row is-head">
                 <span>Model</span>
                 <span>Value</span>
               </div>
-              <div className="yl-model__row">
+              <div className="geo-model__row">
                 <span>Selected</span>
                 <strong>{best ? best.model.replace(/_/g, " ") : "—"}</strong>
               </div>
-              <div className="yl-model__row">
+              <div className="geo-model__row">
                 <span>ROC-AUC</span>
                 <strong>{best ? formatDecimal(best.roc_auc, 2) : "—"}</strong>
               </div>
-              <div className="yl-model__row">
+              <div className="geo-model__row">
                 <span>Recall</span>
                 <strong>{best ? formatPct(best.recall, 1) : "—"}</strong>
               </div>
-              <div className="yl-model__row">
+              <div className="geo-model__row">
                 <span>Precision</span>
                 <strong>{best ? formatPct(best.precision, 1) : "—"}</strong>
               </div>
-              <p className="yl-model__note">
+              <p className="geo-model__note">
                 Precision is low on purpose. The model is tuned to catch downtime, so it
                 raises more alarms than it needs to. Recall is the number that matters
                 when a stopped line costs more than a false alarm.
               </p>
-              <p className="yl-model__note yl-model__download">
+              <p className="geo-model__note">
                 Need it on paper? <strong>Download report</strong> in the dashboard top bar
                 writes this summary, the full accuracy table and the confusion matrix into
                 one printable file.
@@ -493,19 +510,48 @@ export default function Landing({
           </div>
         </section>
 
-        <footer className="yl-footer">
-          <div className="yl-wrap yl-footer__inner">
-            <div className="yl-footer__brand">
-              <span className="yl-brand__mark">
+        {/* ------------------------------------------------------------ cta */}
+        <section className="geo-cta">
+          <GeoShapes variant="cta" />
+          <div className="geo-wrap geo-cta__inner">
+            <div className="geo-cta__copy">
+              <p className="geo-kicker geo-kicker--light">04 / start here</p>
+              <h2 className="geo-cta__title">
+                Start with the machine that matters today.
+              </h2>
+            </div>
+            <div className="geo-cta__actions">
+              <button
+                type="button"
+                className="geo-btn geo-btn--invert"
+                onClick={() => onNavigate("today")}
+              >
+                Read today's report <span aria-hidden="true">→</span>
+              </button>
+              <button
+                type="button"
+                className="geo-btn geo-btn--ghost-light"
+                onClick={onReplayTour}
+              >
+                Replay the tour
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <footer className="geo-footer">
+          <div className="geo-wrap geo-footer__inner">
+            <div className="geo-footer__brand">
+              <span className="geo-brand__mark">
                 <LogoMark />
               </span>
-              <span className="yl-brand__name">YarnLens</span>
+              <span className="geo-brand__name">YarnLens</span>
             </div>
-            <p className="yl-footer__note">
+            <p className="geo-footer__note">
               <strong>Dataset is synthetic.</strong> Results come from a containerized
               Hadoop/YARN/Spark cluster on a single machine.
             </p>
-            <div className="yl-footer__links">
+            <div className="geo-footer__links">
               <button type="button" onClick={onReplayTour}>
                 Replay tour
               </button>
@@ -516,7 +562,10 @@ export default function Landing({
               >
                 GitHub
               </a>
-              <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+              <button
+                type="button"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              >
                 Top
               </button>
             </div>
