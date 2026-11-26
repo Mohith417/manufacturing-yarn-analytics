@@ -229,3 +229,7 @@ data/*.csv
 # ml/train.py. docs/figures/*.png (built from them) ARE committed.
 dashboard/data/*.csv
 *.log
+
+# The dashboard TypeScript sources live in dashboard/src/lib. The Python
+# "lib/" rule above matches any directory named lib, so keep it from hiding them.
+!dashboard/src/lib/

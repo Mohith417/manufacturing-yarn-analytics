@@ -14,10 +14,12 @@ const ICONS: Record<PageId, IconName> = {
 export default function Nav({
   page,
   onNavigate,
+  onHome,
   onReplayTour,
 }: {
   page: PageId;
   onNavigate: (page: PageId) => void;
+  onHome: () => void;
   onReplayTour: () => void;
 }) {
   return (
@@ -26,8 +28,8 @@ export default function Nav({
         <button
           type="button"
           className="brand"
-          onClick={() => onNavigate("today")}
-          aria-label="YarnLens, go to Today"
+          onClick={onHome}
+          aria-label="YarnLens, go to the homepage"
         >
           <span className="brand__mark">
             <LogoMark />
@@ -55,18 +57,9 @@ export default function Nav({
 
         <div className="side-foot">
           <button type="button" className="side-foot__link" onClick={onReplayTour}>
-            <Icon name="help" />
+            <Icon name="reset" />
             Replay tour
           </button>
-          <a
-            className="side-foot__link"
-            href="https://github.com/Mohith417/manufacturing-yarn-analytics"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <Icon name="github" />
-            Source code
-          </a>
           <p className="side-foot__note">
             Synthetic dataset
             <br />

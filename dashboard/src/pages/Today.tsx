@@ -52,7 +52,6 @@ export default function Today({
   kpis,
   rule,
   onOpenMachine,
-  onShowMachines,
 }: {
   machines: MachineRisk[];
   machinesLoading: boolean;
@@ -60,7 +59,6 @@ export default function Today({
   kpis: Kpis | null;
   rule: RiskRule | null;
   onOpenMachine: (id: string) => void;
-  onShowMachines: () => void;
 }) {
   const trend = useJson<TrendPoint[]>("production_trend");
   const downtime = useJson<MachineDowntime[]>("machine_downtime");
@@ -98,11 +96,6 @@ export default function Today({
       <PageHeader
         title="Today"
         what="The machines that need a look first, and how output, downtime and defects are moving."
-        actions={
-          <button type="button" className="btn btn--sm" onClick={onShowMachines}>
-            All machines
-          </button>
-        }
       />
 
       <section className="hero" aria-live="polite">
