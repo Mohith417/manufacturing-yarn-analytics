@@ -263,6 +263,39 @@ kbd {
   cursor: not-allowed;
 }
 
+/* Printable report, the one labelled action in the top bar. */
+.topbar__download {
+  padding: 0 11px;
+  font-size: 12.5px;
+}
+
+.topbar__download svg {
+  opacity: 0.7;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.topbar__download:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.topbar__download:hover:not(:disabled) svg {
+  opacity: 1;
+  transform: translateY(1px);
+}
+
+@media (max-width: 860px) {
+  .topbar__download {
+    width: 32px;
+    padding: 0;
+  }
+
+  .topbar__download-label {
+    display: none;
+  }
+}
+
 .icon-btn {
   display: inline-grid;
   place-items: center;

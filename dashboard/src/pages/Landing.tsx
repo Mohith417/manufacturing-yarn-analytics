@@ -13,7 +13,6 @@ import {
   type ModelMetric,
 } from "../lib/data";
 import type { PageId } from "../lib/nav";
-import { downloadReport } from "../lib/report";
 
 const ABOUT: { title: string; summary: string; more: string }[] = [
   {
@@ -127,7 +126,6 @@ export default function Landing({
   const [step, setStep] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(-1);
-  const [downloading, setDownloading] = useState(false);
 
   const best = useMemo(() => {
     const rows = metrics.data ?? [];
@@ -171,20 +169,6 @@ export default function Landing({
       window.clearTimeout(fallback);
     };
   }, []);
-
-  async function handleDownload() {
-    setDownloading(true);
-    try {
-      await downloadReport({
-        machines,
-        kpis,
-        cluster: cluster.data,
-        metrics: metrics.data ?? [],
-      });
-    } finally {
-      setDownloading(false);
-    }
-  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -234,19 +218,6 @@ export default function Landing({
               title={resolved === "dark" ? "Light theme" : "Dark theme"}
             >
               <Icon name={resolved === "dark" ? "sun" : "moon"} size={16} />
-            </button>
-            <button
-              type="button"
-              className="yl-btn yl-btn--ghost yl-btn--small yl-download"
-              onClick={handleDownload}
-              disabled={downloading || loading}
-              aria-label="Download the plant report"
-              title="Download a printable plant report"
-            >
-              <Icon name="download" size={14} />
-              <span className="yl-download__label">
-                {downloading ? "Preparing…" : "Download report"}
-              </span>
             </button>
           </div>
         </div>
@@ -514,9 +485,9 @@ export default function Landing({
                 when a stopped line costs more than a false alarm.
               </p>
               <p className="yl-model__note yl-model__download">
-                Need it on paper? <strong>Download report</strong> in the header writes this
-                summary, the full accuracy table and the confusion matrix into one printable
-                file.
+                Need it on paper? <strong>Download report</strong> in the dashboard top bar
+                writes this summary, the full accuracy table and the confusion matrix into
+                one printable file.
               </p>
             </div>
           </div>
