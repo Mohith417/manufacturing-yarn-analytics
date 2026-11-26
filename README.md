@@ -39,7 +39,7 @@ hive/create_tables.sql external tables over the Parquet Spark wrote
 hive/queries.sql       five analytical SQL queries
 ml/train.py            time-based split, class weighting, models, risk + priority
 visualizations/         six figures from the exported CSVs
-dashboard/             React + Vite front end (no cluster connection)
+dashboard/             React + Vite front end: landing page, report download, five pages
 dashboard/scripts/     export_dashboard_data.py - CSV exports to JSON
 dashboard/README.md    pages, design notes and the JSON data contract
 legacy/streamlit/      previous Streamlit prototype (superseded)
@@ -115,7 +115,9 @@ npm run build      # static production build in dashboard/dist
 ```
 
 Web UIs: NameNode <http://localhost:9870>, YARN <http://localhost:8088>,
-HiveServer2 <http://localhost:10002>.
+HiveServer2 <http://localhost:10002>. The dashboard opens on its landing page at
+<http://127.0.0.1:5173/#home>; `#today` goes straight to the report, and the
+landing header can download a printable HTML report of the same exported JSON.
 
 ## Measured results
 

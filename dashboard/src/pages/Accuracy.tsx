@@ -65,11 +65,11 @@ function EffectChart({ rows }: { rows: FeatureImportance[] }) {
                 dots={false}
               />
             }
-            cursor={{ fill: "rgba(99, 102, 241, 0.07)" }}
+            cursor={{ fill: "var(--chart-cursor)" }}
           />
           <Bar dataKey="importance" radius={[0, 6, 6, 0]} barSize={15} isAnimationActive={false}>
             {rows.map((row, index) => (
-              <Cell key={row.feature_key} fill={index === 0 ? "#6366f1" : "#c7d2fe"} />
+              <Cell key={row.feature_key} fill={index === 0 ? "var(--chart-bar)" : "var(--chart-bar-muted)"} />
             ))}
             <LabelList
               dataKey="importance"

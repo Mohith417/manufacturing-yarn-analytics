@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import CommandPalette from "./components/CommandPalette";
-import HelpDialog from "./components/HelpDialog";
 import Icon from "./components/Icon";
 import LogoMark from "./components/Logo";
 import MachineDrawer from "./components/MachineDrawer";
@@ -16,20 +15,26 @@ import { PAGE_IDS, type PageId } from "./lib/nav";
 import { rememberTourDismissed, tourDismissed, useTheme } from "./lib/prefs";
 import Accuracy from "./pages/Accuracy";
 import HowItWorks from "./pages/HowItWorks";
+import Landing from "./pages/Landing";
 import Machines from "./pages/Machines";
 import Quality from "./pages/Quality";
 import Today from "./pages/Today";
 
-function pageFromHash(): PageId {
+/** The marketing page is a route, but it lives outside the dashboard shell. */
+type Route = "home" | PageId;
+
+function pageFromHash(): Route {
   const hash = window.location.hash.replace("#", "");
+  if (!hash || hash === "home") {
+    return "home";
+  }
   return (PAGE_IDS as readonly string[]).includes(hash) ? (hash as PageId) : "today";
 }
 
 export default function App() {
-  const [page, setPage] = useState<PageId>(pageFromHash);
+  const [page, setPage] = useState<Route>(pageFromHash);
   const [drawerId, setDrawerId] = useState<string | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const [helpOpen, setHelpOpen] = useState(false);
   const [tourOpen, setTourOpen] = useState(false);
   const { resolved, toggle } = useTheme();
 
@@ -47,9 +52,12 @@ export default function App() {
   useEffect(() => {
     const onHashChange = () => setPage(pageFromHash());
     window.addEventListener("hashchange", onHashChange);
-    // An old bookmark (#overview, #prediction) falls back to Today; rewrite it
-    // so the address bar matches what is on screen.
-    if (!(PAGE_IDS as readonly string[]).includes(window.location.hash.replace("#", ""))) {
+    // Make the address bar match what is on screen: no hash means the landing
+    // page, and an old bookmark (#overview, #prediction) falls back to Today.
+    const hash = window.location.hash.replace("#", "");
+    if (!hash) {
+      window.history.replaceState(null, "", "#home");
+    } else if (hash !== "home" && !(PAGE_IDS as readonly string[]).includes(hash)) {
       window.history.replaceState(null, "", "#today");
     }
     return () => window.removeEventListener("hashchange", onHashChange);
@@ -66,15 +74,16 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  // A first visit gets the tour once; the landing page is where it starts.
   useEffect(() => {
-    if (tourDismissed()) {
+    if (page !== "home" || tourDismissed()) {
       return;
     }
     const timer = window.setTimeout(() => setTourOpen(true), 900);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [page]);
 
-  const navigate = useCallback((next: PageId) => {
+  const navigate = useCallback((next: Route) => {
     setPage(next);
     if (window.location.hash !== `#${next}`) {
       window.location.hash = next;
@@ -84,7 +93,6 @@ export default function App() {
 
   const openMachine = useCallback((id: string) => setDrawerId(id), []);
   const closeDrawer = useCallback(() => setDrawerId(null), []);
-  const closeHelp = useCallback(() => setHelpOpen(false), []);
   const closeTour = useCallback(() => {
     setTourOpen(false);
     rememberTourDismissed();
@@ -93,127 +101,126 @@ export default function App() {
 
   return (
     <>
-      <a className="skip-link" href="#main">
-        Skip to content
-      </a>
+      {page === "home" ? (
+        <Landing
+          machines={machineList}
+          loading={machines.loading}
+          kpis={kpis.data}
+          resolved={resolved}
+          onToggleTheme={toggle}
+          onNavigate={navigate}
+          onReplayTour={replayTour}
+        />
+      ) : (
+        <>
+          <a className="skip-link" href="#main">
+            Skip to content
+          </a>
 
-      <Nav page={page} onNavigate={navigate} onReplayTour={replayTour} />
+          <Nav
+            page={page}
+            onNavigate={navigate}
+            onHome={() => navigate("home")}
+            onReplayTour={replayTour}
+          />
 
-      <div className="shell">
-        <header className="topbar">
-          <button
-            type="button"
-            className="brand brand--topbar"
-            onClick={() => navigate("today")}
-            aria-label="YarnLens, go to Today"
-          >
-            <span className="brand__mark">
-              <LogoMark />
-            </span>
-            <span className="brand__name">
-              yarn<span>lens</span>
-            </span>
-          </button>
-
-          <button
-            type="button"
-            className="searchbtn"
-            onClick={() => setPaletteOpen(true)}
-          >
-            <Icon name="search" size={15} />
-            <span className="searchbtn__label">Search machines or pages</span>
-            <kbd className="searchbtn__kbd">Ctrl K</kbd>
-          </button>
-
-          <div className="topbar__right">
-            <span
-              className="badge-synthetic"
-              title="Every row is generated by data/generate_data.py"
-            >
-              <span className="badge-synthetic__dot" aria-hidden="true" />
-              Synthetic data
-            </span>
-            <button
-              type="button"
-              className="icon-btn"
-              onClick={toggle}
-              aria-label={
-                resolved === "dark" ? "Switch to light theme" : "Switch to dark theme"
-              }
-              title={resolved === "dark" ? "Light theme" : "Dark theme"}
-            >
-              <Icon name={resolved === "dark" ? "sun" : "moon"} size={17} />
-            </button>
-            <button
-              type="button"
-              className="icon-btn"
-              onClick={() => setHelpOpen(true)}
-              aria-label="How it works and help"
-              title="How it works"
-            >
-              <Icon name="help" size={17} />
-            </button>
-          </div>
-        </header>
-
-        <main className="main" id="main" tabIndex={-1}>
-          <div className="page" key={page}>
-            {page === "today" && (
-              <Today
-                machines={machineList}
-                machinesLoading={machines.loading}
-                machinesError={machines.error}
-                kpis={kpis.data}
-                rule={kpis.data?.risk_rule ?? null}
-                onOpenMachine={openMachine}
-                onShowMachines={() => navigate("machines")}
-              />
-            )}
-            {page === "machines" && (
-              <Machines
-                machines={machineList}
-                loading={machines.loading}
-                error={machines.error}
-                onOpenMachine={openMachine}
-              />
-            )}
-            {page === "quality" && <Quality />}
-            {page === "accuracy" && <Accuracy />}
-            {page === "how-it-works" && <HowItWorks />}
-          </div>
-
-          <footer className="footer">
-            <p className="footer__note">
-              <strong>Dataset is synthetic.</strong> Results come from a containerized
-              Hadoop/YARN/Spark cluster on a single machine.
-            </p>
-            <div className="footer__links">
+          <div className="shell">
+            <header className="topbar">
               <button
                 type="button"
-                className="footer__link"
-                onClick={() => setHelpOpen(true)}
+                className="brand brand--topbar"
+                onClick={() => navigate("home")}
+                aria-label="YarnLens, go to the homepage"
               >
-                How it works
+                <span className="brand__mark">
+                  <LogoMark />
+                </span>
+                <span className="brand__name">
+                  yarn<span>lens</span>
+                </span>
               </button>
-              <button type="button" className="footer__link" onClick={replayTour}>
-                Replay tour
-              </button>
-              <a
-                className="footer__link"
-                href="https://github.com/Mohith417/manufacturing-yarn-analytics"
-                target="_blank"
-                rel="noreferrer"
+
+              <button
+                type="button"
+                className="searchbtn"
+                onClick={() => setPaletteOpen(true)}
               >
-                GitHub
-              </a>
-              <span className="footer__sep" aria-hidden="true" />
-              <span>
-                Reads <code>public/data/*.json</code> only
-              </span>
-            </div>
-          </footer>
-        </main>
-      </div>
+                <Icon name="search" size={15} />
+                <span className="searchbtn__label">Search machines or pages</span>
+                <kbd className="searchbtn__kbd">Ctrl K</kbd>
+              </button>
+
+              <div className="topbar__right">
+                <span
+                  className="badge-synthetic"
+                  title="Every row is generated by data/generate_data.py"
+                >
+                  <span className="badge-synthetic__dot" aria-hidden="true" />
+                  Synthetic data
+                </span>
+                <button
+                  type="button"
+                  className="icon-btn"
+                  onClick={toggle}
+                  aria-label={
+                    resolved === "dark" ? "Switch to light theme" : "Switch to dark theme"
+                  }
+                  title={resolved === "dark" ? "Light theme" : "Dark theme"}
+                >
+                  <Icon name={resolved === "dark" ? "sun" : "moon"} size={17} />
+                </button>
+              </div>
+            </header>
+
+            <main className="main" id="main" tabIndex={-1}>
+              <div className="page" key={page}>
+                {page === "today" && (
+                  <Today
+                    machines={machineList}
+                    machinesLoading={machines.loading}
+                    machinesError={machines.error}
+                    kpis={kpis.data}
+                    rule={kpis.data?.risk_rule ?? null}
+                    onOpenMachine={openMachine}
+                  />
+                )}
+                {page === "machines" && (
+                  <Machines
+                    machines={machineList}
+                    loading={machines.loading}
+                    error={machines.error}
+                    onOpenMachine={openMachine}
+                  />
+                )}
+                {page === "quality" && <Quality />}
+                {page === "accuracy" && <Accuracy />}
+                {page === "how-it-works" && <HowItWorks />}
+              </div>
+
+              <footer className="footer">
+                <p className="footer__note">
+                  <strong>Dataset is synthetic.</strong> Results come from a containerized
+                  Hadoop/YARN/Spark cluster on a single machine.
+                </p>
+                <div className="footer__links">
+                  <a
+                    className="footer__link"
+                    href="https://github.com/Mohith417/manufacturing-yarn-analytics"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    GitHub
+                  </a>
+                  <span className="footer__sep" aria-hidden="true" />
+                  <span>
+                    Reads <code>public/data/*.json</code> only
+                  </span>
+                </div>
+              </footer>
+            </main>
+          </div>
+        </>
+      )}
 
       <CommandPalette
         open={paletteOpen}
@@ -232,8 +239,12 @@ export default function App() {
         onClose={closeDrawer}
       />
 
-      <HelpDialog open={helpOpen} onClose={closeHelp} />
-      <Tour open={tourOpen} onClose={closeTour} />
+      <Tour
+        open={tourOpen}
+        page={page}
+        onNavigate={navigate}
+        onClose={closeTour}
+      />
     </>
   );
 }

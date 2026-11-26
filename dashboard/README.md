@@ -14,9 +14,9 @@ numbers rather than typed by hand.
 ```
 dashboard/
   src/App.tsx          shell: hash routing, theme, palette, drawer, tour
-  src/pages/           one component per page
+  src/pages/           Landing plus one component per dashboard page
   src/components/      shared UI (drawer, charts, nav, panels)
-  src/lib/             JSON loading, derived readings, copy, preferences
+  src/lib/             JSON loading, derived readings, copy, preferences, report builder
   public/data/         the JSON contract the app reads
   scripts/             export_dashboard_data.py (CSV exports -> JSON)
 ```
@@ -40,6 +40,38 @@ The exporter reads `dashboard/data/*.csv` only. If a CSV is absent it prints a
 SKIP line and writes **no** JSON file, so the matching panel shows the
 "Awaiting data export" empty state instead of a made-up value.
 
+## Landing page (`#home`)
+
+The app opens on a landing page at `#home` (an empty hash redirects there; an
+unknown hash falls back to Today). It sits outside the dashboard shell and uses
+the same design tokens, brand mark and JSON files as the pages behind it.
+
+- **One dashboard button.** The hero's "Read today's report" is the only control
+  that navigates into the app besides the page links. The header carries the
+  report download instead of a second "open dashboard" button, and the model
+  band ends with a note rather than another link to Accuracy.
+- **About-the-app content, not widgets.** The hero card lists four product
+  promises and expands each on hover or tap; the "what you get" section has four
+  feature cards whose detail line, accent rule and bar glyph animate on hover.
+- **Shared numbers.** Headline count, stat band, pipeline facts and the model
+  summary all come from `public/data/*.json`; nothing on the page is invented.
+- **Tour.** The whole-site tour starts here, covers the landing page and one
+  stop per dashboard page, and moves between routes itself.
+
+## Downloadable report
+
+**Download report** in the landing header builds a self-contained, printable HTML
+file in the browser: `yarnlens-plant-report-YYYY-MM-DD.html` (about 11 KB, no
+scripts or external assets). Open it anywhere and print it to PDF.
+
+It reads the JSON already on the page plus `defect_distribution.json` and
+`confusion_matrix.json`, fetched only when the button is pressed — there is no
+server endpoint. Sections: summary counts and the status rule, the ten machines
+to check first with their main driver, a per-line breakdown, defect-rate ranges,
+the model comparison table with the confusion matrix in plain words, the cluster
+and source files, and a "how to read this report" note. The builder lives in
+`src/lib/report.ts`.
+
 ## Pages
 
 | Page | Content |
@@ -49,19 +81,25 @@ SKIP line and writes **no** JSON file, so the matching panel shows the
 | Machine panel | Slide-over reused from the grid, the table and Ctrl+K: the risk sentence, five key readings, "Why this score" bars, the what-if sliders with current vs simulated risk, and one rule-of-thumb focus suggestion |
 | Quality | Defect rate by range, the correlation heatmap on a blue-to-red diverging scale, and a generated "what this means" line under each chart |
 | Accuracy | Plain verdict from the confusion matrix ("Catches 73% of real downtime…"), model comparison, what pushes the score, and the four outcomes with plain labels |
-| How it works | Three steps from factory data to the dashboard, the cluster card, what the setup is not, and the GitHub link; also opens as a modal from the header and footer |
+| How it works | Three steps from factory data to the dashboard, the cluster card, what the setup is not, and the GitHub link |
 
 Shared chrome: left sidebar on desktop, bottom tab bar on mobile, light/dark
 theme with the system setting as the default, Ctrl+K quick search over pages and
-all machines, and a four-step first-visit tour that can be replayed.
+all machines, and an eight-step whole-site tour (landing page included) that can
+be replayed from the sidebar or the landing footer.
 
 ## Design notes
 
-- **Sans serif only.** Inter Variable is bundled through `@fontsource`, so the
-  page makes no font request to a third party and works offline.
-- **One accent.** Indigo is the only decorative colour. Green, amber and red
+- **Sans serif and mono only.** Inter Variable is bundled through `@fontsource`,
+  so the page makes no font request to a third party and works offline. Small
+  labels and figures use the system monospace stack.
+- **One accent.** Copper is the only decorative colour. Green, amber and red
   appear only as machine status, always with an icon and the words OK / Watch /
   Check now, never colour alone.
+- **One hover language.** Cards lift 1–2 px, table rows tint, plant-floor tiles
+  scale slightly, and the landing's detail text reveals itself — all with
+  reduced-motion support. Page changes animate 240 ms of movement only, so a
+  throttled tab never leaves a page stuck at opacity zero.
 - **Numbers have one source.** No figure on screen is typed into the code: it is
   read from a JSON file or computed from one. The only fixed numbers are slider
   limits derived from the fleet's own exported values.
@@ -71,9 +109,8 @@ all machines, and a four-step first-visit tour that can be replayed.
 - **Honest partial day.** The dataset stops part-way through its final date, so
   that row is left out of every average, comparison and sparkline and is
   reported as partial instead of being read as a production drop.
-- Motion is limited to 150–200 ms transitions and is disabled under
-  `prefers-reduced-motion`. Loading uses skeletons, a missing file shows
-  "Awaiting data export", and a bad file shows the reason.
+- Loading uses skeletons, a missing file shows "Awaiting data export", and a
+  bad file shows the reason.
 
 ## Data contract (`public/data/`)
 

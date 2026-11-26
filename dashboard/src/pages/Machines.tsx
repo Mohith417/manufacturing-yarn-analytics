@@ -258,15 +258,14 @@ export default function Machines({
                     <td className="num">
                       <button
                         type="button"
-                        className="btn btn--ghost btn--sm"
+                        className="row-open"
                         aria-label={`Open details for ${machine.machine_id}`}
                         onClick={(event) => {
                           event.stopPropagation();
                           onOpenMachine(machine.machine_id);
                         }}
                       >
-                        Open
-                        <Icon name="arrowRight" size={12} />
+                        <Icon name="arrowRight" size={14} />
                       </button>
                     </td>
                   </tr>

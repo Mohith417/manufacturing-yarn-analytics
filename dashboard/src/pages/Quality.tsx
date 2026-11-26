@@ -212,11 +212,11 @@ export default function Quality() {
                           dots={false}
                         />
                       }
-                      cursor={{ fill: "rgba(99, 102, 241, 0.07)" }}
+                      cursor={{ fill: "var(--chart-cursor)" }}
                     />
                     <Bar dataKey="count" radius={[6, 6, 0, 0]} isAnimationActive={false}>
                       {chartRows.map((row) => (
-                        <Cell key={row.label} fill={row.isPeak ? "#6366f1" : "#c7d2fe"} />
+                        <Cell key={row.label} fill={row.isPeak ? "var(--chart-bar)" : "var(--chart-bar-muted)"} />
                       ))}
                     </Bar>
                   </BarChart>
