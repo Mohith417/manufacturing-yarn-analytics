@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import CommandPalette from "./components/CommandPalette";
+import DownloadReport from "./components/DownloadReport";
 import Icon from "./components/Icon";
 import LogoMark from "./components/Logo";
 import MachineDrawer from "./components/MachineDrawer";
@@ -158,6 +159,7 @@ export default function App() {
                   <span className="badge-synthetic__dot" aria-hidden="true" />
                   Synthetic data
                 </span>
+                <DownloadReport />
                 <button
                   type="button"
                   className="icon-btn"

@@ -117,7 +117,7 @@ npm run build      # static production build in dashboard/dist
 Web UIs: NameNode <http://localhost:9870>, YARN <http://localhost:8088>,
 HiveServer2 <http://localhost:10002>. The dashboard opens on its landing page at
 <http://127.0.0.1:5173/#home>; `#today` goes straight to the report, and the
-landing header can download a printable HTML report of the same exported JSON.
+dashboard top bar can download a printable HTML report of the same exported JSON.
 
 ## Measured results
 

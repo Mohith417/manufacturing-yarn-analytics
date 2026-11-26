@@ -47,9 +47,9 @@ unknown hash falls back to Today). It sits outside the dashboard shell and uses
 the same design tokens, brand mark and JSON files as the pages behind it.
 
 - **One dashboard button.** The hero's "Read today's report" is the only control
-  that navigates into the app besides the page links. The header carries the
-  report download instead of a second "open dashboard" button, and the model
-  band ends with a note rather than another link to Accuracy.
+  that navigates into the app besides the page links. The header carries only the
+  theme toggle, and the model band ends with a note pointing at the dashboard's
+  report download rather than another link to Accuracy.
 - **About-the-app content, not widgets.** The hero card lists four product
   promises and expands each on hover or tap; the "what you get" section has four
   feature cards whose detail line, accent rule and bar glyph animate on hover.
@@ -60,7 +60,7 @@ the same design tokens, brand mark and JSON files as the pages behind it.
 
 ## Downloadable report
 
-**Download report** in the landing header builds a self-contained, printable HTML
+**Download report** in the dashboard top bar builds a self-contained, printable HTML
 file in the browser: `yarnlens-plant-report-YYYY-MM-DD.html` (about 11 KB, no
 scripts or external assets). Open it anywhere and print it to PDF.
 

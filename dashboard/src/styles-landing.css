@@ -1184,31 +1184,6 @@
 
 /* --------------------------------------------------------------- download */
 
-.yl-download {
-  color: var(--yl-ink);
-}
-
-.yl-download svg {
-  opacity: 0.7;
-  transition: opacity 160ms ease, transform 160ms ease;
-}
-
-.yl-download:hover {
-  border-color: var(--yl-ink);
-  background: color-mix(in srgb, var(--yl-ink) 7%, transparent);
-  color: var(--yl-ink);
-}
-
-.yl-download:hover svg {
-  opacity: 1;
-  transform: translateY(1px);
-}
-
-.yl-download:disabled {
-  opacity: 0.55;
-  cursor: progress;
-}
-
 .yl-model__download {
   margin-top: 22px;
   color: color-mix(in srgb, var(--yl-inv-fg) 72%, transparent);
@@ -1219,14 +1194,3 @@
   font-weight: 600;
 }
 
-@media (max-width: 560px) {
-  .yl-download {
-    width: 34px;
-    padding: 0;
-    justify-content: center;
-  }
-
-  .yl-download__label {
-    display: none;
-  }
-}
