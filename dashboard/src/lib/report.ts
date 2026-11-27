@@ -181,7 +181,7 @@ export function buildReportHtml(input: ReportInput): string {
   }
   .eyebrow {
     margin: 0;
-    color: #2f43d4;
+    color: #b8451a;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 10px;
     letter-spacing: 0.12em;
@@ -251,8 +251,8 @@ export function buildReportHtml(input: ReportInput): string {
   .note {
     margin-top: 10px;
     padding: 10px 12px;
-    border-left: 3px solid #2f43d4;
-    background: #f2efe6;
+    border-left: 3px solid #b8451a;
+    background: #f7f5f0;
     font-size: 12px;
   }
   .cols { display: flex; flex-wrap: wrap; gap: 28px; }
