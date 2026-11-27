@@ -117,12 +117,6 @@ export default function App() {
             Skip to content
           </a>
 
-          <Nav
-            page={page}
-            onNavigate={navigate}
-            onHome={() => navigate("home")}
-          />
-
           <div className="shell">
             <header className="topbar">
               <button
@@ -171,6 +165,8 @@ export default function App() {
                 </button>
               </div>
             </header>
+
+            <Nav page={page} onNavigate={navigate} />
 
             <main className="main" id="main" tabIndex={-1}>
               <div className="page" key={page}>
