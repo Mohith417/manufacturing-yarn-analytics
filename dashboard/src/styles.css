@@ -3707,3 +3707,189 @@ a {
 .skip-link {
   transition: top 150ms ease, transform 150ms ease;
 }
+
+/* ==========================================================================
+   Horizontal navigation
+   The dashboard is one column now: brand and actions on the header row, the
+   eight pages as one scrollable pill bar underneath. No sidebar, no bottom tab
+   bar, no second navigation pattern on small screens.
+   ========================================================================== */
+
+.shell {
+  margin-left: 0;
+}
+
+.sidebar,
+.tabbar,
+.brand .side-foot {
+  display: none;
+}
+
+.brand--topbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0;
+  margin-right: 4px;
+  border: 0;
+  background: none;
+  color: var(--text);
+}
+
+.brand--topbar .brand__mark {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 8px;
+  background: linear-gradient(150deg, #f7a870, #c0561f 62%, #8f3512);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 8px 18px -14px rgba(240, 138, 75, 0.9);
+}
+
+.brand--topbar .brand__mark svg {
+  width: 17px;
+  height: 17px;
+  color: #fff;
+}
+
+.brand--topbar .brand__name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 560;
+  letter-spacing: -0.02em;
+}
+
+.brand--topbar .brand__name span {
+  color: var(--accent);
+}
+
+.topnav {
+  position: sticky;
+  top: var(--header-h);
+  z-index: 29;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.topnav__inner {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  max-width: 1260px;
+  margin: 0 auto;
+  padding: 8px 26px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.topnav__inner::-webkit-scrollbar {
+  display: none;
+}
+
+.topnav__link {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  transition: color 160ms ease, background 160ms ease, border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.topnav__link svg {
+  color: var(--text-3);
+  transition: color 160ms ease;
+}
+
+.topnav__link:hover {
+  transform: translateY(-1px);
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.topnav__link:hover svg {
+  color: var(--accent);
+}
+
+.topnav__link.is-active {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 18%, transparent),
+    color-mix(in srgb, var(--accent) 5%, transparent)
+  );
+  border-color: color-mix(in srgb, var(--accent) 34%, transparent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+.topnav__link.is-active svg {
+  color: var(--accent);
+}
+
+/* A hairline under the active pill, so the row reads as a navigation rail. */
+.topnav__link.is-active::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -9px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+[data-theme="dark"] .topnav__link.is-active {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 10px 26px -22px var(--accent);
+}
+
+.main {
+  max-width: 1260px;
+  padding-top: 18px;
+}
+
+@media (max-width: 1000px) {
+  .main {
+    padding: 14px 16px 28px;
+  }
+
+  .topnav__inner {
+    padding: 8px 14px;
+  }
+}
+
+@media (max-width: 560px) {
+  .main {
+    padding: 12px 12px 24px;
+  }
+
+  .brand--topbar .brand__name {
+    display: none;
+  }
+
+  .topnav__link {
+    height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .topnav__link.is-active::after {
+    bottom: -8px;
+  }
+}

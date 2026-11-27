@@ -46,17 +46,17 @@ The app opens on a landing page at `#home` (an empty hash redirects there; an
 unknown hash falls back to Today). It sits outside the dashboard shell and uses
 the same design tokens, brand mark and JSON files as the pages behind it.
 
-- **One dashboard button.** The hero's "Read today's report" is the only control
-  that navigates into the app besides the page links. The header carries only the
-  theme toggle, and the model band ends with a note pointing at the dashboard's
-  report download rather than another link to Accuracy.
-- **About-the-app content, not widgets.** The hero card lists four product
-  promises and expands each on hover or tap; the "what you get" section has four
-  feature cards whose detail line, accent rule and bar glyph animate on hover.
-- **Shared numbers.** Headline count, stat band, pipeline facts and the model
-  summary all come from `public/data/*.json`; nothing on the page is invented.
-- **Tour.** The whole-site tour starts here, covers the landing page and one
-  stop per dashboard page, and moves between routes itself.
+- **One screen.** The header (brand, GitHub, theme toggle), the wave hero, the
+  snapshot panel and the footer. There are no feature, pipeline or model sections
+  and no tour: the dashboard pages carry that detail.
+- **Two ways in.** "Open dashboard" and "Try with your own CSV" are the only
+  controls; the header carries only the GitHub link and the theme toggle.
+- **Shared numbers.** The headline count, the risk split, the downtime and defect
+  rates, the row count, the pipeline facts and the model summary all come from
+  `public/data/*.json`; nothing on the page is invented.
+- **Snapshot panel.** A conic-gradient donut splits the fleet into check now /
+  watch / healthy with the real counts, beside the three exported figures and two
+  chips naming the Spark/Hadoop cluster and the shipped model.
 
 ## Downloadable report
 
@@ -83,10 +83,10 @@ and source files, and a "how to read this report" note. The builder lives in
 | Accuracy | Plain verdict from the confusion matrix ("Catches 73% of real downtime…"), model comparison, what pushes the score, and the four outcomes with plain labels |
 | How it works | Three steps from factory data to the dashboard, the cluster card, what the setup is not, and the GitHub link |
 
-Shared chrome: left sidebar on desktop, bottom tab bar on mobile, light/dark
-theme with the system setting as the default, Ctrl+K quick search over pages and
-all machines, and an eight-step whole-site tour (landing page included) that can
-be replayed from the sidebar or the landing footer.
+Shared chrome: one horizontal page bar under the header — the eight pages as
+scrollable pills that stay legible on a narrow screen — light/dark theme with the
+system setting as the default, Ctrl+K quick search over pages and all machines,
+and the downloadable report. There is no sidebar and no bottom tab bar.
 
 ## Design notes
 

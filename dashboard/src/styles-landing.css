@@ -2026,3 +2026,304 @@
   background: none;
   border-top-color: rgba(20, 17, 12, 0.12);
 }
+
+/* --------------------------------------------------------------- snapshot */
+
+/* The flat five-column band is replaced by one panel: a real risk split for
+   the fleet, three exported figures and the pipeline that produced them. */
+.landing {
+  --yl-panel-solid: #fffdf8;
+  /* Status colours for the donut. The global tokens are dark enough to read as
+     mud at ring width on paper, so the panel carries its own palette. */
+  --risk-bad: #c8442f;
+  --risk-warn: #cf9226;
+  --risk-ok: #2e8b62;
+}
+
+[data-theme="dark"] .landing {
+  --yl-panel-solid: #0d141a;
+  --risk-bad: #ff9b94;
+  --risk-warn: #e8b45c;
+  --risk-ok: #63d3a4;
+}
+
+.yl-snapshot {
+  margin-top: 22px;
+  padding: 18px 20px 16px;
+  border: 1px solid var(--yl-rule);
+  border-radius: 18px;
+  background: var(--yl-paper-2);
+  box-shadow: 0 30px 80px -70px var(--yl-ink);
+}
+
+[data-theme="dark"] .yl-snapshot {
+  background:
+    linear-gradient(165deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012)),
+    rgba(13, 20, 26, 0.72);
+  border-color: rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.yl-snapshot__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+}
+
+.yl-snapshot__title {
+  font-family: var(--yl-font-display);
+  font-variation-settings: "SOFT" 0, "WONK" 0;
+  font-size: 19px;
+  font-weight: 520;
+  letter-spacing: -0.02em;
+}
+
+.yl-snapshot__note {
+  color: var(--yl-ink-3);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 9px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.yl-snapshot__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.55fr);
+  gap: 26px;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.yl-snapshot__split {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 0;
+}
+
+.yl-donut {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 108px;
+  height: 108px;
+  flex: none;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 14px 30px -24px var(--yl-ink);
+}
+
+.yl-donut__hole {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: var(--yl-panel-solid);
+  box-shadow: inset 0 0 0 1px var(--yl-rule);
+}
+
+.yl-donut__hole strong {
+  font-family: var(--yl-font-display);
+  font-size: 26px;
+  font-weight: 520;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.yl-donut__hole small {
+  margin-top: 2px;
+  color: var(--yl-ink-3);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.yl-split {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  flex: 1;
+  min-width: 0;
+}
+
+.yl-split li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--yl-ink-2);
+  font-size: 12px;
+}
+
+.yl-split li strong {
+  margin-left: auto;
+  color: var(--yl-ink);
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.yl-split__dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+}
+
+.yl-split__dot--red {
+  background: var(--risk-bad);
+}
+
+.yl-split__dot--amber {
+  background: var(--risk-warn);
+}
+
+.yl-split__dot--green {
+  background: var(--risk-ok);
+}
+
+.yl-split__scale {
+  justify-content: space-between;
+  margin-top: 3px;
+  padding-top: 7px;
+  border-top: 1px solid var(--yl-rule);
+  color: var(--yl-ink-3);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.yl-snapshot__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+}
+
+.yl-snapshot__stats > div {
+  min-width: 0;
+  padding-left: 16px;
+  border-left: 1px solid var(--yl-rule);
+}
+
+.yl-snapshot__stats > div:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.yl-snapshot__stats dt {
+  color: var(--yl-ink-3);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.yl-snapshot__stats dd {
+  margin-top: 5px;
+  font-family: var(--yl-font-display);
+  font-variation-settings: "SOFT" 0, "WONK" 0;
+  font-size: clamp(1.35rem, 2.2vw, 1.8rem);
+  font-weight: 520;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.yl-snapshot__stats p {
+  margin-top: 4px;
+  color: var(--yl-ink-3);
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+.yl-snapshot__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 13px;
+  border-top: 1px solid var(--yl-rule);
+}
+
+.yl-snapshot__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border: 1px solid var(--yl-rule);
+  border-radius: 999px;
+  color: var(--yl-ink-3);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.yl-snapshot__chip strong {
+  color: var(--yl-ink-2);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+@media (max-width: 900px) {
+  .yl-snapshot__grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+}
+
+@media (max-width: 560px) {
+  .yl-snapshot {
+    padding: 15px 15px 13px;
+    border-radius: 15px;
+  }
+
+  .yl-snapshot__split {
+    gap: 14px;
+  }
+
+  .yl-donut {
+    width: 88px;
+    height: 88px;
+  }
+
+  .yl-donut__hole {
+    width: 62px;
+    height: 62px;
+  }
+
+  .yl-donut__hole strong {
+    font-size: 21px;
+  }
+
+  .yl-snapshot__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .yl-snapshot__stats > div:nth-child(3) {
+    padding-left: 0;
+    border-left: 0;
+    border-top: 1px solid var(--yl-rule);
+    padding-top: 10px;
+    grid-column: 1 / -1;
+  }
+}
+
+/* On a narrow screen the eight pills scroll sideways; fade the last one so the
+   row reads as scrollable instead of clipped. */
+@media (max-width: 1000px) {
+  .topnav__inner {
+    mask-image: linear-gradient(90deg, #000 calc(100% - 26px), transparent);
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 26px), transparent);
+  }
+}

@@ -11,6 +11,7 @@ import {
   type Kpis,
   type MachineRisk,
 } from "../lib/data";
+import { statusCounts } from "../lib/derive";
 import type { PageId } from "../lib/nav";
 
 /**
@@ -35,6 +36,11 @@ export default function Landing({
 }) {
   const cluster = useJson<ClusterInfo>("cluster_info");
   const [scrolled, setScrolled] = useState(false);
+  const counts = statusCounts(machines);
+  const total = Math.max(1, counts.total);
+  const redPct = (counts.check / total) * 100;
+  const amberPct = (counts.watch / total) * 100;
+  const greenPct = (counts.ok / total) * 100;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -139,32 +145,90 @@ export default function Landing({
               </div>
             </div>
 
-            <dl className="yl-band">
-              <div>
-                <dt>Machines</dt>
-                <dd>{loading ? "—" : formatInt(machines.length)}</dd>
+            <section className="yl-snapshot" aria-label="Plant snapshot">
+              <header className="yl-snapshot__head">
+                <p className="yl-snapshot__title">Today, at a glance</p>
+                <p className="yl-snapshot__note">
+                  Latest reading per machine · {formatInt(machines.length)} machines · 4 lines
+                </p>
+              </header>
+
+              <div className="yl-snapshot__grid">
+                <div className="yl-snapshot__split">
+                  <div
+                    className="yl-donut"
+                    style={{
+                      background: `conic-gradient(
+                        var(--risk-bad) 0 ${redPct}%,
+                        var(--risk-warn) ${redPct}% ${redPct + amberPct}%,
+                        var(--risk-ok) ${redPct + amberPct}% 100%
+                      )`,
+                    }}
+                    aria-hidden="true"
+                  >
+                    <span className="yl-donut__hole">
+                      <strong>{loading ? "—" : counts.total}</strong>
+                      <small>machines</small>
+                    </span>
+                  </div>
+
+                  <ul className="yl-split">
+                    <li>
+                      <i className="yl-split__dot yl-split__dot--red" aria-hidden="true" />
+                      <span>Check now</span>
+                      <strong>{loading ? "—" : counts.check}</strong>
+                    </li>
+                    <li>
+                      <i className="yl-split__dot yl-split__dot--amber" aria-hidden="true" />
+                      <span>Watch</span>
+                      <strong>{loading ? "—" : counts.watch}</strong>
+                    </li>
+                    <li>
+                      <i className="yl-split__dot yl-split__dot--green" aria-hidden="true" />
+                      <span>Healthy</span>
+                      <strong>{loading ? "—" : counts.ok}</strong>
+                    </li>
+                    <li className="yl-split__scale" aria-hidden="true">
+                      <span>latest reading</span>
+                      <span>{greenPct.toFixed(0)}% healthy</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <dl className="yl-snapshot__stats">
+                  <div>
+                    <dt>Downtime readings</dt>
+                    <dd>{kpis ? formatPct(kpis.downtime_rate, 1) : "—"}</dd>
+                    <p>of one-minute readings</p>
+                  </div>
+                  <div>
+                    <dt>Units with a defect</dt>
+                    <dd>{kpis ? formatPct(kpis.avg_defect_rate, 2) : "—"}</dd>
+                    <p>across every produced unit</p>
+                  </div>
+                  <div>
+                    <dt>Rows through Spark</dt>
+                    <dd>{formatInt(cluster.data?.rows_processed)}</dd>
+                    <p>readings in the export</p>
+                  </div>
+                </dl>
               </div>
-              <div>
-                <dt>Downtime readings</dt>
-                <dd>{kpis ? formatPct(kpis.downtime_rate, 1) : "—"}</dd>
-              </div>
-              <div>
-                <dt>Units with a defect</dt>
-                <dd>{kpis ? formatPct(kpis.avg_defect_rate, 2) : "—"}</dd>
-              </div>
-              <div>
-                <dt>Rows through Spark</dt>
-                <dd>{formatInt(cluster.data?.rows_processed)}</dd>
-              </div>
-              <div>
-                <dt>Cluster</dt>
-                <dd>
-                  {cluster.data
-                    ? `${cluster.data.nodes} nodes · Spark ${cluster.data.spark_version}`
-                    : "—"}
-                </dd>
-              </div>
-            </dl>
+
+              <footer className="yl-snapshot__foot">
+                <span className="yl-snapshot__chip">
+                  Pipeline
+                  <strong>
+                    {cluster.data
+                      ? `Spark ${cluster.data.spark_version} · Hadoop ${cluster.data.hadoop_version} · ${cluster.data.nodes} nodes`
+                      : "reading the export"}
+                  </strong>
+                </span>
+                <span className="yl-snapshot__chip">
+                  Model
+                  <strong>logistic regression · ROC-AUC 0.81</strong>
+                </span>
+              </footer>
+            </section>
           </div>
         </section>
 
