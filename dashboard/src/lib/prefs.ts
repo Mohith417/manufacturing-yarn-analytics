@@ -65,6 +65,21 @@ export function useTheme() {
     write(THEME_KEY, choice);
   }, [choice]);
 
+  // Keep a second tab in step. Without this, toggling on one page leaves the
+  // other tab (and its stage) on the old theme.
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== THEME_KEY) {
+        return;
+      }
+      const next = readTheme();
+      setChoice(next);
+      setResolved(applyTheme(next));
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
   useEffect(() => {
     if (choice !== "system") {
       return;

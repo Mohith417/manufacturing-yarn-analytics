@@ -23,7 +23,13 @@ const RING_STEP = 0.27;
  *  - a machine without WebGL simply keeps the CSS gradient underneath;
  *  - every GPU resource is disposed when the component unmounts.
  */
-export default function WaveField({ variant = "hero" }: { variant?: Variant }) {
+export default function WaveField({
+  variant = "hero",
+  theme = "dark",
+}: {
+  variant?: Variant;
+  theme?: "light" | "dark";
+}) {
   const hostRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -132,14 +138,32 @@ export default function WaveField({ variant = "hero" }: { variant?: Variant }) {
         uOpacity: { value: variant === "hero" ? 1 : 0.72 },
         uColorA: { value: new THREE.Color("#f08a4b") },
         uColorB: { value: new THREE.Color("#9ec6d8") },
+        // 1 = additive (ink background), 0 = normal alpha (paper background).
+        uNormalBlend: { value: 0 },
       };
+
+      // Additive light reads on ink; on paper the same points need normal
+      // alpha blending and a darker palette, otherwise they vanish into white.
+      const light = theme === "light";
+      uniforms.uSize.value = light ? (variant === "hero" ? 3.4 : 2.0) : variant === "hero" ? 3.5 : 2.2;
+      uniforms.uNormalBlend.value = light ? 1 : 0;
+      // Deeper pigments on paper: the same copper at a lower alpha reads grey.
+      uniforms.uColorA.value = new THREE.Color(light ? "#8f3512" : "#f08a4b");
+      uniforms.uColorB.value = new THREE.Color(light ? "#2f5666" : "#9ec6d8");
+      uniforms.uOpacity.value = light
+        ? variant === "hero"
+          ? 0.95
+          : 0.5
+        : variant === "hero"
+          ? 1
+          : 0.72;
 
       const material = new THREE.ShaderMaterial({
         uniforms,
         transparent: true,
         depthWrite: false,
         depthTest: true,
-        blending: THREE.AdditiveBlending,
+        blending: light ? THREE.NormalBlending : THREE.AdditiveBlending,
         vertexShader: /* glsl */ `
           uniform float uTime;
           uniform float uPixelRatio;
@@ -182,6 +206,7 @@ export default function WaveField({ variant = "hero" }: { variant?: Variant }) {
           uniform vec3 uColorA;
           uniform vec3 uColorB;
           uniform float uOpacity;
+          uniform float uNormalBlend;
           varying float vGlow;
 
           void main() {
@@ -190,8 +215,12 @@ export default function WaveField({ variant = "hero" }: { variant?: Variant }) {
             if (distanceToCentre > 0.5) discard;
             float core = smoothstep(0.5, 0.02, distanceToCentre);
             float alpha = pow(core, 2.1) * uOpacity * (0.4 + 0.6 * vGlow);
-            vec3 colour = mix(uColorA, uColorB, clamp(vGlow * 1.2, 0.0, 1.0));
-            gl_FragColor = vec4(colour * alpha, alpha);
+            // Copper dominates; only the brightest crests pick up the cool tint.
+            vec3 colour = mix(uColorA, uColorB, clamp((vGlow - 0.62) * 2.4, 0.0, 1.0));
+            // Additive needs premultiplied colour; normal blending would then
+            // multiply by alpha a second time and wash the points out.
+            float premultiply = 1.0 - uNormalBlend;
+            gl_FragColor = vec4(colour * mix(1.0, alpha, premultiply), alpha);
           }
         `,
       });
@@ -333,7 +362,7 @@ export default function WaveField({ variant = "hero" }: { variant?: Variant }) {
       disposed = true;
       cleanup?.();
     };
-  }, [variant]);
+  }, [variant, theme]);
 
   return (
     <div

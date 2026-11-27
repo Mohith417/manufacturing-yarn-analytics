@@ -1899,3 +1899,130 @@
     transform: none;
   }
 }
+
+/* --------------------------------------------------------------- one screen */
+
+/* Header: brand, GitHub and the theme switch. No section links: the landing
+   page no longer has sections to jump to. */
+.yl-header__link {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 4px;
+  color: var(--yl-ink-2);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.yl-header__link:hover {
+  color: var(--yl-signal);
+  text-decoration: none;
+}
+
+/* The hero is the page. It takes the viewport minus the header, so the wave,
+   the promise and the numbers are visible together without scrolling. */
+.yl-hero {
+  padding: clamp(22px, 3.4vw, 40px) 0 0;
+}
+
+.yl-stage {
+  min-height: clamp(430px, calc(100vh - 300px), 640px);
+}
+
+.yl-footer {
+  padding: 26px 0 34px;
+}
+
+/* The stage follows the theme instead of staying dark. On paper the rings
+   switch to normal-blended copper and steel, which is what the canvas draws
+   when it receives theme="light". */
+[data-theme="light"] .yl-stage {
+  background:
+    radial-gradient(52% 62% at 66% 48%, rgba(120, 155, 170, 0.2), transparent 72%),
+    radial-gradient(40% 44% at 88% 14%, rgba(184, 69, 26, 0.1), transparent 74%),
+    linear-gradient(168deg, #fffdf8 0%, #f8f3e8 60%, #f1e9da 100%);
+  color: #14110c;
+  box-shadow:
+    0 40px 90px -78px rgba(20, 17, 12, 0.5),
+    0 0 70px -54px rgba(184, 69, 26, 0.45);
+}
+
+[data-theme="light"] .yl-stage__veil {
+  background:
+    linear-gradient(
+      100deg,
+      rgba(250, 246, 238, 0.97) 0%,
+      rgba(250, 246, 238, 0.84) 38%,
+      rgba(250, 246, 238, 0.32) 66%,
+      rgba(250, 246, 238, 0.02) 100%
+    ),
+    linear-gradient(0deg, rgba(250, 246, 238, 0.9), transparent 48%);
+}
+
+/* A narrow screen puts the canvas under the words, so the light veil turns
+   vertical and denser where the copy sits. */
+@media (max-width: 760px) {
+  [data-theme="light"] .yl-stage__veil {
+    background: linear-gradient(
+      180deg,
+      rgba(250, 246, 238, 0.86) 0%,
+      rgba(250, 246, 238, 0.94) 46%,
+      rgba(250, 246, 238, 0.97) 100%
+    );
+  }
+}
+
+[data-theme="light"] .yl-stage__eyebrow {
+  color: #6f6858;
+}
+
+[data-theme="light"] .yl-stage__title {
+  color: #14110c;
+}
+
+[data-theme="light"] .yl-stage__title em {
+  color: #b8451a;
+}
+
+[data-theme="light"] .yl-stage__sub {
+  color: #4a443a;
+}
+
+[data-theme="light"] .yl-btn--onDark {
+  border-color: rgba(20, 17, 12, 0.22);
+  background: rgba(255, 253, 248, 0.55);
+  color: #14110c;
+}
+
+[data-theme="light"] .yl-btn--onDark:hover {
+  border-color: rgba(20, 17, 12, 0.55);
+  background: rgba(255, 253, 248, 0.9);
+}
+
+[data-theme="light"] .yl-stage__chip {
+  border-color: rgba(20, 17, 12, 0.14);
+  background: rgba(255, 253, 248, 0.7);
+  color: #2b2720;
+}
+
+[data-theme="light"] .yl-stage__meta {
+  color: #6f6858;
+}
+
+/* No hard frame around the stage: the glow does the separating. */
+.yl-stage {
+  box-shadow:
+    0 60px 120px -90px #000,
+    0 0 90px -70px rgba(240, 138, 75, 0.45);
+}
+
+[data-theme="light"] .yl-band {
+  border-top-color: rgba(20, 17, 12, 0.16);
+}
+
+[data-theme="light"] .yl-footer {
+  background: none;
+  border-top-color: rgba(20, 17, 12, 0.12);
+}
