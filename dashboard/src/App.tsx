@@ -51,16 +51,24 @@ export default function App() {
     : null;
 
   useEffect(() => {
-    const onHashChange = () => setPage(pageFromHash());
-    window.addEventListener("hashchange", onHashChange);
     // Make the address bar match what is on screen: no hash means the landing
     // page, and an old bookmark (#overview, #prediction) falls back to Today.
-    const hash = window.location.hash.replace("#", "");
-    if (!hash) {
-      window.history.replaceState(null, "", "#home");
-    } else if (hash !== "home" && !(PAGE_IDS as readonly string[]).includes(hash)) {
-      window.history.replaceState(null, "", "#today");
-    }
+    // This runs on every hash change, not just the first load, so a stale link
+    // opened from inside the app does not leave the wrong hash in the address bar.
+    const canonicaliseHash = () => {
+      const hash = window.location.hash.replace("#", "");
+      if (!hash) {
+        window.history.replaceState(null, "", "#home");
+      } else if (hash !== "home" && !(PAGE_IDS as readonly string[]).includes(hash)) {
+        window.history.replaceState(null, "", "#today");
+      }
+    };
+    const onHashChange = () => {
+      setPage(pageFromHash());
+      canonicaliseHash();
+    };
+    window.addEventListener("hashchange", onHashChange);
+    canonicaliseHash();
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
