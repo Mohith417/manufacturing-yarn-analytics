@@ -39,8 +39,13 @@ hive/create_tables.sql external tables over the Parquet Spark wrote
 hive/queries.sql       five analytical SQL queries
 ml/train.py            time-based split, class weighting, models, risk + priority
 visualizations/         six figures from the exported CSVs
-dashboard/             React + Vite front end: landing page, report download, five pages
+dashboard/             React + Vite front end: landing page, report download, eight pages
 dashboard/scripts/     export_dashboard_data.py - CSV exports to JSON
+                       make_sample_csvs.py - the synthetic upload samples
+dashboard/public/samples/  sample_ok.csv + three broken files for the upload page
+backend/               FastAPI scoring API, saved joblib models, Postgres schema
+ml/export_sklearn_models.py  trains the servable models and their metrics
+docker/docker-compose.app.yml  the local API + Postgres stack (separate from Hadoop)
 dashboard/README.md    pages, design notes and the JSON data contract
 legacy/streamlit/      previous Streamlit prototype (superseded)
 docs/benchmarks.md     measured YARN tuning table
@@ -118,6 +123,90 @@ Web UIs: NameNode <http://localhost:9870>, YARN <http://localhost:8088>,
 HiveServer2 <http://localhost:10002>. The dashboard opens on its landing page at
 <http://127.0.0.1:5173/#home>; `#today` goes straight to the report, and the
 dashboard top bar can download a printable HTML report of the same exported JSON.
+
+## Two ways to run the dashboard
+
+**Static mode (default, no server).** `npm run dev` in `dashboard/` is enough.
+The landing page, Today, Machines, Quality, Accuracy, How it works and
+**Upload and score** all work. Upload reads the CSV in the browser with the
+exported coefficients and never sends it anywhere. The three live pages say
+"Live mode needs the local API" and nothing in the console is an error.
+
+**Live mode (the local API).** One command brings up the API and its own
+Postgres (this is a different container from the Hive metastore and does not
+touch the Hadoop stack):
+
+```powershell
+Copy-Item .env.example .env     # once; local values only, .env is gitignored
+docker compose --env-file .env -f docker/docker-compose.app.yml up --build
+```
+
+Then `npm run dev` and open the dashboard. `GET /api/health` answers on
+<http://127.0.0.1:8000/api/health>; the front end probes it once at startup.
+With the API up, **Live feed** streams a simulated reading per machine every
+`SIMULATED_INTERVAL_SECONDS` seconds, **History** reads stored scores from
+Postgres, and Upload offers the three scikit-learn models. Stop the containers
+and the app returns to static mode without a reload error.
+
+### The four added features
+
+| Feature | Where | How it works |
+|---|---|---|
+| A. Upload and score | `#upload` | CSV parsed and scored in the browser; nothing leaves the machine |
+| B. Scoring API | `backend/app/main.py` | `POST /api/score` with the saved joblib models |
+| C. Simulated live feed | `#live` | `GET /api/stream` (SSE), one batch per interval, labelled Simulated |
+| D. History | `#history` | Postgres tables `machines`, `readings`, `scores`; `GET /api/history`, `GET /api/trends`, `DELETE /api/history?confirm=clear-all` |
+
+The upload page has a working sample plus three deliberately broken files
+(`bad_missing_column.csv`, `bad_empty_cells.csv`, `bad_text_values.csv`) so the
+file-check report can be tested without inventing data.
+
+### Tests
+
+```powershell
+cd dashboard; npm test          # 16 tests: CSV reader/validator, scoring vs Python
+cd backend;   ..\.venv\Scripts\python.exe -m pytest tests -q   # 10 tests
+```
+
+The pytest storage test is skipped unless the Postgres container is running;
+point `DATABASE_URL` at `127.0.0.1:5433` to run it against the compose database.
+
+### Two sets of metrics, never mixed
+
+`dashboard/public/data/model_metrics.json` holds the **Spark MLlib** metrics of
+the pipeline run. `backend/models/metrics_sklearn.json` holds the
+**scikit-learn** metrics of `ml/export_sklearn_models.py` on its own held-out
+split. They use different libraries, splitters and class weighting, so they are
+printed separately and must not be compared as one number.
+
+| scikit-learn model | Precision | Recall | F1 | ROC-AUC |
+|---|---|---|---|---|
+| Logistic regression | 0.1886 | 0.7282 | 0.2996 | 0.8131 |
+| Decision tree | 0.1869 | 0.6850 | 0.2937 | 0.7943 |
+| Random forest | 0.1826 | 0.7208 | 0.2914 | 0.8044 |
+
+Time split at 2024-10-01: 392,536 training rows, 104,941 held-out rows, every
+model with `class_weight="balanced"`.
+
+### Limitations
+
+- The dataset is synthetic; the live feed is simulated and labelled so.
+- The API and database are local-only. The hosted static build has no backend.
+- The Hadoop cluster is a single Docker engine on one machine, so it
+demonstrates the architecture rather than multi-server speed-up.
+- Precision is low on purpose: the model is tuned to catch downtime, and the
+Accuracy page prints the false alarms instead of hiding them.
+- The maintenance priority list uses an estimated lost-units formula; that
+column stays hidden in the UI and is documented as an estimate, not a forecast.
+
+### The decision-tree ROC-AUC
+
+The earlier Spark MLlib export reported roughly 0.53 for the decision tree. The
+cause was scoring hard 0/1 predictions rather than probabilities. Both the API
+and `ml/export_sklearn_models.py` now call `predict_proba`, which gives 0.7943 on
+the held-out period; `backend/tests/test_api.py` asserts that the served tree
+returns probabilities that vary between machines, so the regression cannot
+return unnoticed.
 
 ## Measured results
 
