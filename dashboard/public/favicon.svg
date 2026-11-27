@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="YarnLens logo">
-  <rect width="64" height="64" rx="16" fill="#2F43D4"/>
+  <rect width="64" height="64" rx="16" fill="#B8451A"/>
   <!-- yarn spool: a barrel with wound thread -->
   <path d="M22 14h20v36H22z" fill="#FFFFFF" opacity="0.16"/>
   <path d="M22 14h20M22 50h20" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
