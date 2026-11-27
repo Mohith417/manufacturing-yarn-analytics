@@ -3,9 +3,11 @@ import "../styles-wave.css";
 
 type Variant = "hero" | "ambient";
 
-const RING_COUNT: Record<Variant, number> = { hero: 116, ambient: 68 };
+const RING_COUNT: Record<Variant, number> = { hero: 110, ambient: 68 };
 const PER_RING: Record<Variant, number> = { hero: 260, ambient: 150 };
-const RING_STEP = 0.27;
+// Wider spacing on the full-page field: at the hero camera distance the
+// tighter ambient step turns the rings into indistinguishable dust.
+const RING_STEP: Record<Variant, number> = { hero: 0.52, ambient: 0.27 };
 
 /**
  * A field of glowing points arranged in concentric rings. A vertex shader
@@ -110,7 +112,7 @@ export default function WaveField({
 
       let index = 0;
       for (let ring = 1; ring <= ringCount; ring += 1) {
-        const radius = ring * RING_STEP;
+        const radius = ring * RING_STEP[variant];
         // Stagger each ring so the dots never line up into spokes.
         const offset = random() * Math.PI * 2;
         for (let step = 0; step < perRing; step += 1) {
@@ -145,14 +147,14 @@ export default function WaveField({
       // Additive light reads on ink; on paper the same points need normal
       // alpha blending and a darker palette, otherwise they vanish into white.
       const light = theme === "light";
-      uniforms.uSize.value = light ? (variant === "hero" ? 3.4 : 2.0) : variant === "hero" ? 3.5 : 2.2;
+      uniforms.uSize.value = light ? (variant === "hero" ? 4.4 : 2.0) : variant === "hero" ? 5.2 : 2.2;
       uniforms.uNormalBlend.value = light ? 1 : 0;
       // Deeper pigments on paper: the same copper at a lower alpha reads grey.
-      uniforms.uColorA.value = new THREE.Color(light ? "#8f3512" : "#f08a4b");
+      uniforms.uColorA.value = new THREE.Color(light ? "#752c0e" : "#f08a4b");
       uniforms.uColorB.value = new THREE.Color(light ? "#2f5666" : "#9ec6d8");
       uniforms.uOpacity.value = light
         ? variant === "hero"
-          ? 0.95
+          ? 1
           : 0.5
         : variant === "hero"
           ? 1
@@ -172,6 +174,7 @@ export default function WaveField({
           attribute float aAngle;
           attribute float aSeed;
           varying float vGlow;
+          varying float vFade;
 
           void main() {
             float t = uTime;
@@ -200,6 +203,8 @@ export default function WaveField({
               * (0.5 + 0.95 * clamp(wave * 0.5 + 0.5, 0.0, 1.0))
               * (32.0 / max(1.0, -view.z));
             vGlow = clamp(wave * 0.95 + 0.45, 0.0, 1.0);
+            // Dissolve the outermost rings instead of ending on a visible rim.
+            vFade = 1.0 - smoothstep(45.0, 57.0, radius);
           }
         `,
         fragmentShader: /* glsl */ `
@@ -208,13 +213,14 @@ export default function WaveField({
           uniform float uOpacity;
           uniform float uNormalBlend;
           varying float vGlow;
+          varying float vFade;
 
           void main() {
             vec2 uv = gl_PointCoord - 0.5;
             float distanceToCentre = length(uv);
             if (distanceToCentre > 0.5) discard;
             float core = smoothstep(0.5, 0.02, distanceToCentre);
-            float alpha = pow(core, 2.1) * uOpacity * (0.4 + 0.6 * vGlow);
+            float alpha = pow(core, 2.0) * uOpacity * (0.5 + 0.5 * vGlow) * vFade;
             // Copper dominates; only the brightest crests pick up the cool tint.
             vec3 colour = mix(uColorA, uColorB, clamp((vGlow - 0.62) * 2.4, 0.0, 1.0));
             // Additive needs premultiplied colour; normal blending would then
@@ -239,10 +245,13 @@ export default function WaveField({
           // frame while the camera drifts by a couple of degrees at most.
           // Almost edge-on, like a record: the rings read as concentric
           // ellipses instead of a bowl of dots.
+          // Looking almost straight down at the record. A side-on camera leaves
+          // an empty horizon band across the top of a full-page field; from
+          // above, the rings reach every edge of the viewport with no border.
           camera.position.set(
-            Math.sin(drift * 0.09) * 0.9,
-            3.1 + Math.cos(drift * 0.07) * 0.2,
-            21.5 + Math.sin(drift * 0.045) * 0.4,
+            Math.sin(drift * 0.09) * 1.2,
+            38 + Math.cos(drift * 0.07) * 0.35,
+            7 + Math.sin(drift * 0.045) * 0.5,
           );
           camera.lookAt(0, 0, 0);
         } else {
@@ -263,10 +272,22 @@ export default function WaveField({
       // performance.now(), not THREE.Clock: Clock is deprecated in three 0.187
       // and warns on every mount.
       const startedAt = performance.now();
+      let frameCount = 0;
       const tick = () => {
         frame = 0;
         if (disposed) {
           return;
+        }
+        // Belt and braces for environments whose resize event never arrives:
+        // a stretched canvas is the one thing that visibly blurs the wave.
+        frameCount += 1;
+        if (frameCount % 30 === 0 && hostRef.current) {
+          if (
+            hostRef.current.clientWidth !== sizedWidth ||
+            hostRef.current.clientHeight !== sizedHeight
+          ) {
+            resize();
+          }
         }
         uniforms.uTime.value = (performance.now() - startedAt) / 1000;
         cameraAt(uniforms.uTime.value);
@@ -290,12 +311,17 @@ export default function WaveField({
         }
       };
 
+      let sizedWidth = width;
+      let sizedHeight = height;
+
       const resize = () => {
         if (!hostRef.current) {
           return;
         }
         const nextWidth = hostRef.current.clientWidth || 1;
         const nextHeight = hostRef.current.clientHeight || 1;
+        sizedWidth = nextWidth;
+        sizedHeight = nextHeight;
         camera.aspect = nextWidth / nextHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(nextWidth, nextHeight, false);
@@ -331,9 +357,10 @@ export default function WaveField({
       if (typeof ResizeObserver !== "undefined") {
         resizeObserver = new ResizeObserver(resize);
         resizeObserver.observe(host);
-      } else {
-        window.addEventListener("resize", resize);
       }
+      // Also listen on the window: the observer alone has been seen not to fire
+      // on a viewport change, which left the canvas stretched and blurry.
+      window.addEventListener("resize", resize);
       document.addEventListener("visibilitychange", onVisibility);
 
       renderOnce();
