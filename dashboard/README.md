@@ -153,10 +153,13 @@ reference; the app above replaces it.
 The landing page and every dashboard page share one visual system: a Three.js
 circular wave (`src/components/WaveField.tsx`) drawn from scratch with a vertex
 shader, glass cards, Fraunces display headings and Inter Tight interface type.
-Dark is the default theme; light remains fully supported. The wave is lazy
-loaded, capped at 2x pixel ratio, paused when the tab is hidden or the canvas is
-off screen, stilled for `prefers-reduced-motion`, and replaced by a gradient
-when WebGL is unavailable. There is no tour: the pages explain themselves.
+Dark is the default theme; light remains fully supported. On the landing page the
+wave is a fixed full-page layer behind the header, hero, snapshot and footer, so
+the rings run to every edge with no card, frame or cut corner; the only overlay
+is a feathered scrim under the words. The wave is lazy loaded, capped at 2x pixel
+ratio, paused when the tab is hidden or the canvas is off screen, stilled for
+`prefers-reduced-motion`, and replaced by a gradient when WebGL is unavailable.
+There is no tour: the pages explain themselves.
 
 Three pages join the original five:
 

@@ -2327,3 +2327,166 @@
     -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 26px), transparent);
   }
 }
+
+/* ==========================================================================
+   Seamless full-page wave
+   The canvas is no longer a child of a rounded stage. It is one fixed layer
+   behind the entire landing page, so the rings run past every edge, continue
+   behind the snapshot and the footer, and never meet a frame or a cut corner.
+   The only overlay is a feathered paper/ink scrim under the words.
+   ========================================================================== */
+
+.landing {
+  overflow: visible;
+}
+
+.yl-waves {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.yl-waves .wavefield {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* A wider, softer bloom than the boxed stage had: no ellipse edge. */
+.yl-waves .wavefield__glow {
+  inset: -12% -8%;
+}
+
+.yl-waves::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      100deg,
+      color-mix(in srgb, var(--yl-paper) 90%, transparent) 0%,
+      color-mix(in srgb, var(--yl-paper) 80%, transparent) 30%,
+      color-mix(in srgb, var(--yl-paper) 48%, transparent) 52%,
+      color-mix(in srgb, var(--yl-paper) 10%, transparent) 74%,
+      transparent 88%
+    ),
+    linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--yl-paper) 72%, transparent),
+      transparent 46%
+    );
+}
+
+.yl-header,
+.landing main {
+  position: relative;
+  z-index: 1;
+}
+
+.yl-header {
+  background: color-mix(in srgb, var(--yl-paper) 66%, transparent);
+}
+
+/* The hero is the page: copy on the left, rings open on the right. */
+.yl-hero {
+  padding: 0;
+}
+
+.yl-hero__inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: clamp(44px, 8vh, 96px);
+  min-height: calc(100svh - 90px);
+  padding: clamp(48px, 9vh, 110px) 0 clamp(26px, 5vh, 56px);
+}
+
+.yl-hero__copy {
+  width: min(660px, 100%);
+}
+
+.yl-hero__foot {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+}
+
+.yl-hero .yl-stage__eyebrow {
+  color: var(--yl-ink-3);
+}
+
+.yl-hero .yl-stage__title {
+  color: var(--yl-ink);
+  font-size: clamp(2.55rem, 6vw, 4.5rem);
+}
+
+.yl-hero .yl-stage__title em {
+  color: var(--yl-signal);
+}
+
+.yl-hero .yl-stage__sub {
+  color: var(--yl-ink-2);
+  max-width: 46ch;
+  font-size: 15px;
+}
+
+.yl-hero .yl-stage__chip {
+  border-color: color-mix(in srgb, var(--yl-ink) 16%, transparent);
+  background: color-mix(in srgb, var(--yl-paper) 70%, transparent);
+  color: var(--yl-ink-2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.yl-hero .yl-stage__meta {
+  color: var(--yl-ink-3);
+}
+
+/* The figure panel floats on the wave instead of sitting in a solid band. */
+.yl-snapshot-wrap {
+  padding-bottom: clamp(44px, 9vh, 100px);
+}
+
+.yl-snapshot {
+  margin-top: 0;
+}
+
+[data-theme="light"] .yl-snapshot {
+  background: color-mix(in srgb, var(--yl-paper) 82%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* The wave continues under the footer to the bottom of the page. */
+.yl-footer {
+  background: transparent;
+  border-top-color: color-mix(in srgb, var(--yl-ink) 14%, transparent);
+}
+
+@media (max-width: 760px) {
+  .yl-hero__inner {
+    min-height: calc(100svh - 76px);
+    padding: clamp(38px, 7vh, 70px) 0 24px;
+    gap: 40px;
+  }
+
+  .yl-hero .yl-stage__title {
+    font-size: clamp(2.25rem, 10vw, 3rem);
+  }
+
+  /* Only enough paper to keep the headline crisp: the rings stay visible
+     behind it instead of disappearing under an opaque sheet. */
+  .yl-waves::after {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--yl-paper) 76%, transparent) 0%,
+      color-mix(in srgb, var(--yl-paper) 68%, transparent) 40%,
+      color-mix(in srgb, var(--yl-paper) 40%, transparent) 72%,
+      color-mix(in srgb, var(--yl-paper) 18%, transparent) 100%
+    );
+  }
+}

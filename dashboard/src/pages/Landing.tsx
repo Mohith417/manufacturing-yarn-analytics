@@ -18,6 +18,10 @@ import type { PageId } from "../lib/nav";
  * The landing page is one screen: the wave, the promise, two ways in, and the
  * few real numbers the export can prove. Everything longer belongs in the
  * dashboard, so there are no feature, pipeline or model sections here.
+ *
+ * The wave is a fixed layer behind the whole page rather than a canvas inside a
+ * rounded card: the rings run edge to edge and continue behind the snapshot and
+ * the footer, with no frame and no cut corner anywhere.
  */
 export default function Landing({
   machines,
@@ -51,6 +55,10 @@ export default function Landing({
 
   return (
     <div className="landing">
+      <div className="yl-waves" aria-hidden="true">
+        <WaveField variant="hero" theme={resolved} />
+      </div>
+
       <a className="skip-link" href="#main">
         Skip to content
       </a>
@@ -93,144 +101,142 @@ export default function Landing({
 
       <main id="main" tabIndex={-1}>
         <section className="yl-hero">
-          <div className="yl-wrap">
-            <div className="yl-stage">
-              <WaveField variant="hero" theme={resolved} />
-              <div className="yl-stage__veil" aria-hidden="true" />
-              <div className="yl-stage__body">
-                <p className="yl-stage__eyebrow">
-                  <span aria-hidden="true" />
-                  Synthetic plant · one ranked list
-                </p>
+          <div className="yl-wrap yl-hero__inner">
+            <div className="yl-hero__copy">
+              <p className="yl-stage__eyebrow">
+                <span aria-hidden="true" />
+                Synthetic plant · one ranked list
+              </p>
 
-                <h1 className="yl-stage__title">
-                  Know which machine
-                  <br />
-                  to check <em>next.</em>
-                </h1>
+              <h1 className="yl-stage__title">
+                Know which machine
+                <br />
+                to check <em>next.</em>
+              </h1>
 
-                <p className="yl-stage__sub">
-                  YarnLens scores every machine in a yarn plant and puts the ones most likely
-                  to stop at the top. One list, one reason per machine, no charts to compare.
-                </p>
+              <p className="yl-stage__sub">
+                YarnLens scores every machine in a yarn plant and puts the ones most likely to
+                stop at the top. One list, one reason per machine, no charts to compare.
+              </p>
 
-                <div className="yl-stage__actions">
-                  <button
-                    type="button"
-                    className="yl-btn yl-btn--solid"
-                    onClick={() => onNavigate("today")}
-                  >
-                    Open dashboard <span aria-hidden="true">→</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="yl-btn yl-btn--onDark"
-                    onClick={() => onNavigate("upload")}
-                  >
-                    Try with your own CSV
-                  </button>
-                </div>
-              </div>
-
-              <div className="yl-stage__foot">
-                <span className="yl-stage__chip">
-                  <i aria-hidden="true" />
-                  {loading ? "Reading the export" : `${kpis?.high_risk_count ?? 0} need a look today`}
-                </span>
-                <span className="yl-stage__meta">
-                  {loading
-                    ? "—"
-                    : `${formatInt(machines.length)} machines · ${new Set(machines.map((m) => m.line)).size} lines`}
-                </span>
+              <div className="yl-stage__actions">
+                <button
+                  type="button"
+                  className="yl-btn yl-btn--solid"
+                  onClick={() => onNavigate("today")}
+                >
+                  Open dashboard <span aria-hidden="true">→</span>
+                </button>
+                <button
+                  type="button"
+                  className="yl-btn yl-btn--onDark"
+                  onClick={() => onNavigate("upload")}
+                >
+                  Try with your own CSV
+                </button>
               </div>
             </div>
 
-            <section className="yl-snapshot" aria-label="Plant snapshot">
-              <header className="yl-snapshot__head">
-                <p className="yl-snapshot__title">Today, at a glance</p>
-                <p className="yl-snapshot__note">
-                  Latest reading per machine · {formatInt(machines.length)} machines · 4 lines
-                </p>
-              </header>
-
-              <div className="yl-snapshot__grid">
-                <div className="yl-snapshot__split">
-                  <div
-                    className="yl-donut"
-                    style={{
-                      background: `conic-gradient(
-                        var(--risk-bad) 0 ${redPct}%,
-                        var(--risk-warn) ${redPct}% ${redPct + amberPct}%,
-                        var(--risk-ok) ${redPct + amberPct}% 100%
-                      )`,
-                    }}
-                    aria-hidden="true"
-                  >
-                    <span className="yl-donut__hole">
-                      <strong>{loading ? "—" : counts.total}</strong>
-                      <small>machines</small>
-                    </span>
-                  </div>
-
-                  <ul className="yl-split">
-                    <li>
-                      <i className="yl-split__dot yl-split__dot--red" aria-hidden="true" />
-                      <span>Check now</span>
-                      <strong>{loading ? "—" : counts.check}</strong>
-                    </li>
-                    <li>
-                      <i className="yl-split__dot yl-split__dot--amber" aria-hidden="true" />
-                      <span>Watch</span>
-                      <strong>{loading ? "—" : counts.watch}</strong>
-                    </li>
-                    <li>
-                      <i className="yl-split__dot yl-split__dot--green" aria-hidden="true" />
-                      <span>Healthy</span>
-                      <strong>{loading ? "—" : counts.ok}</strong>
-                    </li>
-                    <li className="yl-split__scale" aria-hidden="true">
-                      <span>latest reading</span>
-                      <span>{greenPct.toFixed(0)}% healthy</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <dl className="yl-snapshot__stats">
-                  <div>
-                    <dt>Downtime readings</dt>
-                    <dd>{kpis ? formatPct(kpis.downtime_rate, 1) : "—"}</dd>
-                    <p>of one-minute readings</p>
-                  </div>
-                  <div>
-                    <dt>Units with a defect</dt>
-                    <dd>{kpis ? formatPct(kpis.avg_defect_rate, 2) : "—"}</dd>
-                    <p>across every produced unit</p>
-                  </div>
-                  <div>
-                    <dt>Rows through Spark</dt>
-                    <dd>{formatInt(cluster.data?.rows_processed)}</dd>
-                    <p>readings in the export</p>
-                  </div>
-                </dl>
-              </div>
-
-              <footer className="yl-snapshot__foot">
-                <span className="yl-snapshot__chip">
-                  Pipeline
-                  <strong>
-                    {cluster.data
-                      ? `Spark ${cluster.data.spark_version} · Hadoop ${cluster.data.hadoop_version} · ${cluster.data.nodes} nodes`
-                      : "reading the export"}
-                  </strong>
-                </span>
-                <span className="yl-snapshot__chip">
-                  Model
-                  <strong>logistic regression · ROC-AUC 0.81</strong>
-                </span>
-              </footer>
-            </section>
+            <div className="yl-hero__foot">
+              <span className="yl-stage__chip">
+                <i aria-hidden="true" />
+                {loading ? "Reading the export" : `${kpis?.high_risk_count ?? 0} need a look today`}
+              </span>
+              <span className="yl-stage__meta">
+                {loading
+                  ? "—"
+                  : `${formatInt(machines.length)} machines · ${new Set(machines.map((m) => m.line)).size} lines`}
+              </span>
+            </div>
           </div>
         </section>
+
+        <div className="yl-wrap yl-snapshot-wrap">
+          <section className="yl-snapshot" aria-label="Plant snapshot">
+            <header className="yl-snapshot__head">
+              <p className="yl-snapshot__title">Today, at a glance</p>
+              <p className="yl-snapshot__note">
+                Latest reading per machine · {formatInt(machines.length)} machines · 4 lines
+              </p>
+            </header>
+
+            <div className="yl-snapshot__grid">
+              <div className="yl-snapshot__split">
+                <div
+                  className="yl-donut"
+                  style={{
+                    background: `conic-gradient(
+                      var(--risk-bad) 0 ${redPct}%,
+                      var(--risk-warn) ${redPct}% ${redPct + amberPct}%,
+                      var(--risk-ok) ${redPct + amberPct}% 100%
+                    )`,
+                  }}
+                  aria-hidden="true"
+                >
+                  <span className="yl-donut__hole">
+                    <strong>{loading ? "—" : counts.total}</strong>
+                    <small>machines</small>
+                  </span>
+                </div>
+
+                <ul className="yl-split">
+                  <li>
+                    <i className="yl-split__dot yl-split__dot--red" aria-hidden="true" />
+                    <span>Check now</span>
+                    <strong>{loading ? "—" : counts.check}</strong>
+                  </li>
+                  <li>
+                    <i className="yl-split__dot yl-split__dot--amber" aria-hidden="true" />
+                    <span>Watch</span>
+                    <strong>{loading ? "—" : counts.watch}</strong>
+                  </li>
+                  <li>
+                    <i className="yl-split__dot yl-split__dot--green" aria-hidden="true" />
+                    <span>Healthy</span>
+                    <strong>{loading ? "—" : counts.ok}</strong>
+                  </li>
+                  <li className="yl-split__scale" aria-hidden="true">
+                    <span>latest reading</span>
+                    <span>{greenPct.toFixed(0)}% healthy</span>
+                  </li>
+                </ul>
+              </div>
+
+              <dl className="yl-snapshot__stats">
+                <div>
+                  <dt>Downtime readings</dt>
+                  <dd>{kpis ? formatPct(kpis.downtime_rate, 1) : "—"}</dd>
+                  <p>of one-minute readings</p>
+                </div>
+                <div>
+                  <dt>Units with a defect</dt>
+                  <dd>{kpis ? formatPct(kpis.avg_defect_rate, 2) : "—"}</dd>
+                  <p>across every produced unit</p>
+                </div>
+                <div>
+                  <dt>Rows through Spark</dt>
+                  <dd>{formatInt(cluster.data?.rows_processed)}</dd>
+                  <p>readings in the export</p>
+                </div>
+              </dl>
+            </div>
+
+            <footer className="yl-snapshot__foot">
+              <span className="yl-snapshot__chip">
+                Pipeline
+                <strong>
+                  {cluster.data
+                    ? `Spark ${cluster.data.spark_version} · Hadoop ${cluster.data.hadoop_version} · ${cluster.data.nodes} nodes`
+                    : "reading the export"}
+                </strong>
+              </span>
+              <span className="yl-snapshot__chip">
+                Model
+                <strong>logistic regression · ROC-AUC 0.81</strong>
+              </span>
+            </footer>
+          </section>
+        </div>
 
         <footer className="yl-footer">
           <div className="yl-wrap yl-footer__inner">
