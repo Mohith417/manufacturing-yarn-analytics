@@ -567,7 +567,7 @@
 }
 
 .yl-model__row.is-head {
-  color: color-mix(in srgb, var(--yl-inv-fg) 45%, transparent);
+  color: color-mix(in srgb, var(--yl-inv-fg) 62%, transparent);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 9px;
   letter-spacing: 0.09em;
