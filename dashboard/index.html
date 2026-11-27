@@ -17,11 +17,14 @@
       // fallback.
       (function () {
         try {
-          var stored = window.localStorage.getItem("yarnlens.theme");
+          var stored = window.localStorage.getItem("yarnlens.theme.v2");
+          // No saved choice means the dark-first design, matching lib/prefs.ts.
           var dark =
-            stored === "dark" ||
-            ((stored === null || stored === "system") &&
-              window.matchMedia("(prefers-color-scheme: dark)").matches);
+            stored !== "light" &&
+            (stored === "dark" ||
+              stored === null ||
+              (stored === "system" &&
+                window.matchMedia("(prefers-color-scheme: dark)").matches));
           document.documentElement.dataset.theme = dark ? "dark" : "light";
           document.documentElement.style.colorScheme = dark ? "dark" : "light";
         } catch (error) {

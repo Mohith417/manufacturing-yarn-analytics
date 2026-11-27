@@ -5,6 +5,9 @@ import LogoMark from "./Logo";
 const ICONS: Record<PageId, IconName> = {
   today: "today",
   machines: "machines",
+  upload: "upload",
+  live: "live",
+  history: "history",
   quality: "quality",
   accuracy: "accuracy",
   "how-it-works": "help",
@@ -15,12 +18,10 @@ export default function Nav({
   page,
   onNavigate,
   onHome,
-  onReplayTour,
 }: {
   page: PageId;
   onNavigate: (page: PageId) => void;
   onHome: () => void;
-  onReplayTour: () => void;
 }) {
   return (
     <>
@@ -56,10 +57,6 @@ export default function Nav({
         </nav>
 
         <div className="side-foot">
-          <button type="button" className="side-foot__link" onClick={onReplayTour}>
-            <Icon name="reset" />
-            Replay tour
-          </button>
           <p className="side-foot__note">
             Synthetic dataset
             <br />

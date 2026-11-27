@@ -23,7 +23,10 @@ export type IconName =
   | "arrowRight"
   | "download"
   | "github"
-  | "spark";
+  | "spark"
+  | "upload"
+  | "live"
+  | "history"
 
 const PATHS: Record<IconName, ReactNode> = {
   today: <path d="M3 12h4l2.5-7 3 14 2.5-7H21" />,
@@ -106,6 +109,26 @@ const PATHS: Record<IconName, ReactNode> = {
     <path d="M12 2.8a9.2 9.2 0 0 0-2.9 17.9c.5.1.6-.2.6-.5v-1.7c-2.5.5-3.1-1.2-3.1-1.2-.4-1-1-1.3-1-1.3-.9-.6.1-.6.1-.6.9.1 1.4.9 1.4.9.8 1.4 2.2 1 2.7.8.1-.6.3-1 .6-1.3-2-.2-4.1-1-4.1-4.4 0-1 .3-1.8.9-2.4-.1-.2-.4-1.1.1-2.3 0 0 .8-.2 2.5.9a8.7 8.7 0 0 1 4.6 0c1.7-1.1 2.5-.9 2.5-.9.5 1.2.2 2.1.1 2.3.6.6.9 1.4.9 2.4 0 3.4-2.1 4.2-4.1 4.4.3.3.6.9.6 1.8v2.7c0 .3.1.6.6.5A9.2 9.2 0 0 0 12 2.8Z" />
   ),
   spark: <path d="M12 3v4M12 17v4M5 12H3M21 12h-2M6.3 6.3 4.9 4.9M19.1 19.1l-1.4-1.4M17.7 6.3l1.4-1.4M4.9 19.1l1.4-1.4" />,
+  upload: (
+    <>
+      <path d="M12 16.5V4.5" />
+      <path d="m7.5 9 4.5-4.5L16.5 9" />
+      <path d="M4.5 15v3.5a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5V15" />
+    </>
+  ),
+  live: (
+    <>
+      <path d="M3 12h3l2.5-6 3.5 12 2.5-6h6" />
+      <circle cx="19.5" cy="12" r="1.6" />
+    </>
+  ),
+  history: (
+    <>
+      <path d="M4 10a8 8 0 1 1 2 5.3" />
+      <path d="M4 4.5V10h5.5" />
+      <path d="M12 8v4.4l2.8 1.8" />
+    </>
+  ),
 };
 
 /** One inline icon set; stroke icons inherit the current text colour. */

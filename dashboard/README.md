@@ -147,3 +147,29 @@ dataset and is explained on the Accuracy page rather than hidden.
 
 `legacy/streamlit/app.py` is the previous Streamlit prototype and is kept for
 reference; the app above replaces it.
+
+## 2026 additions: the wave, upload, live feed and history
+
+The landing page and every dashboard page share one visual system: a Three.js
+circular wave (`src/components/WaveField.tsx`) drawn from scratch with a vertex
+shader, glass cards, Fraunces display headings and Inter Tight interface type.
+Dark is the default theme; light remains fully supported. The wave is lazy
+loaded, capped at 2x pixel ratio, paused when the tab is hidden or the canvas is
+off screen, stilled for `prefers-reduced-motion`, and replaced by a gradient
+when WebGL is unavailable. There is no tour: the pages explain themselves.
+
+Three pages join the original five:
+
+| Route | Page | Needs the API |
+|---|---|---|
+| `#upload` | Upload and score | No — scores in the browser; model picker appears when the API is up |
+| `#live` | Live feed (simulated, SSE) | Yes |
+| `#history` | Stored scores and hourly trend | Yes |
+
+The API lives in `../backend` and is started with
+`docker compose --env-file .env -f docker/docker-compose.app.yml up --build`.
+Without it the three pages show a friendly "needs the local API" card and the
+rest of the app keeps working.
+
+Upload samples live in `public/samples/`; regenerate them with
+`python scripts/make_sample_csvs.py`. Tests: `npm test`.
