@@ -5,7 +5,7 @@ import Icon from "./components/Icon";
 import LogoMark from "./components/Logo";
 import MachineDrawer from "./components/MachineDrawer";
 import Nav from "./components/Nav";
-import Tour from "./components/Tour";
+import WaveField from "./components/WaveField";
 import {
   useJson,
   type Kpis,
@@ -13,13 +13,16 @@ import {
   type ModelCoefficients,
 } from "./lib/data";
 import { PAGE_IDS, type PageId } from "./lib/nav";
-import { rememberTourDismissed, tourDismissed, useTheme } from "./lib/prefs";
+import { useTheme } from "./lib/prefs";
 import Accuracy from "./pages/Accuracy";
+import History from "./pages/History";
 import HowItWorks from "./pages/HowItWorks";
 import Landing from "./pages/Landing";
+import Live from "./pages/Live";
 import Machines from "./pages/Machines";
 import Quality from "./pages/Quality";
 import Today from "./pages/Today";
+import Upload from "./pages/Upload";
 
 /** The marketing page is a route, but it lives outside the dashboard shell. */
 type Route = "home" | PageId;
@@ -36,7 +39,6 @@ export default function App() {
   const [page, setPage] = useState<Route>(pageFromHash);
   const [drawerId, setDrawerId] = useState<string | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const [tourOpen, setTourOpen] = useState(false);
   const { resolved, toggle } = useTheme();
 
   // The shell owns the three files the palette and the drawer need, so both
@@ -83,15 +85,6 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  // A first visit gets the tour once; the landing page is where it starts.
-  useEffect(() => {
-    if (page !== "home" || tourDismissed()) {
-      return;
-    }
-    const timer = window.setTimeout(() => setTourOpen(true), 900);
-    return () => window.clearTimeout(timer);
-  }, [page]);
-
   const navigate = useCallback((next: Route) => {
     setPage(next);
     if (window.location.hash !== `#${next}`) {
@@ -102,11 +95,6 @@ export default function App() {
 
   const openMachine = useCallback((id: string) => setDrawerId(id), []);
   const closeDrawer = useCallback(() => setDrawerId(null), []);
-  const closeTour = useCallback(() => {
-    setTourOpen(false);
-    rememberTourDismissed();
-  }, []);
-  const replayTour = useCallback(() => setTourOpen(true), []);
 
   return (
     <>
@@ -118,10 +106,13 @@ export default function App() {
           resolved={resolved}
           onToggleTheme={toggle}
           onNavigate={navigate}
-          onReplayTour={replayTour}
         />
       ) : (
         <>
+          {/* A quiet copy of the landing field, fixed behind every page. It is
+              decorative, so it takes no pointer events and no tab stop. */}
+          <WaveField variant="ambient" />
+
           <a className="skip-link" href="#main">
             Skip to content
           </a>
@@ -130,7 +121,6 @@ export default function App() {
             page={page}
             onNavigate={navigate}
             onHome={() => navigate("home")}
-            onReplayTour={replayTour}
           />
 
           <div className="shell">
@@ -202,6 +192,15 @@ export default function App() {
                     onOpenMachine={openMachine}
                   />
                 )}
+                {page === "upload" && (
+                  <Upload
+                    model={model.data}
+                    modelError={model.error}
+                    rule={kpis.data?.risk_rule ?? null}
+                  />
+                )}
+                {page === "live" && <Live />}
+                {page === "history" && <History machines={machineList} />}
                 {page === "quality" && <Quality />}
                 {page === "accuracy" && <Accuracy />}
                 {page === "how-it-works" && <HowItWorks />}
@@ -249,12 +248,6 @@ export default function App() {
         onClose={closeDrawer}
       />
 
-      <Tour
-        open={tourOpen}
-        page={page}
-        onNavigate={navigate}
-        onClose={closeTour}
-      />
     </>
   );
 }

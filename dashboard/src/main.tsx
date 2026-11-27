@@ -1,7 +1,9 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 // Bundled locally: no request leaves the machine for fonts.
-import "@fontsource-variable/inter";
+// Inter Tight carries the interface; Fraunces carries the display headings.
+import "@fontsource-variable/inter-tight";
+import "@fontsource-variable/fraunces";
 import App from "./App";
 import { applyTheme, readTheme } from "./lib/prefs";
 import "./styles.css";

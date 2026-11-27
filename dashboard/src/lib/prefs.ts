@@ -3,7 +3,10 @@ import { useEffect, useState } from "react";
 export type ThemeChoice = "system" | "light" | "dark";
 export type ResolvedTheme = "light" | "dark";
 
-const THEME_KEY = "yarnlens.theme";
+// Versioned: the dark-first redesign must not inherit an old "system" value
+// saved by an earlier build. Bumping the key gives every visitor the new look
+// once, and their next choice is still remembered.
+const THEME_KEY = "yarnlens.theme.v2";
 const TOUR_KEY = "yarnlens.tour.dismissed";
 
 /**
@@ -36,7 +39,12 @@ export function systemTheme(): ResolvedTheme {
 
 export function readTheme(): ThemeChoice {
   const stored = read(THEME_KEY);
-  return stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
+  if (stored === "light" || stored === "dark" || stored === "system") {
+    return stored;
+  }
+  // The landing and dashboard are designed dark-first around the wave field;
+  // a visitor with no saved choice gets that look rather than the system value.
+  return "dark";
 }
 
 export function applyTheme(choice: ThemeChoice): ResolvedTheme {
