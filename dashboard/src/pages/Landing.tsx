@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "../styles-landing.css";
 import Icon from "../components/Icon";
-import { RingMark } from "../components/Logo";
+import LogoMark from "../components/Logo";
 import WaveField from "../components/WaveField";
 import {
   formatInt,
@@ -72,7 +72,7 @@ export default function Landing({
             aria-label="YarnLens, back to top"
           >
             <span className="yl-brand__mark">
-              <RingMark />
+              <LogoMark />
             </span>
             <span className="yl-brand__word">
               <span className="yl-brand__name">YarnLens</span>
