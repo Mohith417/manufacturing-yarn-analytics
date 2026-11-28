@@ -10,7 +10,9 @@ import {
   type Kpis,
   type MachineRisk,
   type ModelMetric,
+  type RiskLevel,
 } from "./data";
+import type { UploadSummary } from "./lastUpload";
 
 export interface ReportInput {
   machines: MachineRisk[];
@@ -19,6 +21,8 @@ export interface ReportInput {
   metrics: ModelMetric[];
   defects: DefectBin[] | null;
   confusion: ConfusionMatrix | null;
+  /** The file last scored on the Upload page, if there is one this session. */
+  upload: UploadSummary | null;
   generatedAt: Date;
 }
 
@@ -43,6 +47,23 @@ function driverLabel(machine: MachineRisk): string {
 
 function lineName(line: string): string {
   return line.replace("_", " ");
+}
+
+/** A readable local time, or an empty string when the stamp is unusable. */
+function humanTime(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  return escapeHtml(
+    date.toLocaleString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  );
 }
 
 function badge(level: MachineRisk["risk_level"]): string {
@@ -72,7 +93,7 @@ export function table(head: string[], rows: string[][], numeric: number[] = []):
 
 /** The whole report is a single self-contained HTML file: no scripts, no assets. */
 export function buildReportHtml(input: ReportInput): string {
-  const { machines, kpis, cluster, metrics, defects, confusion, generatedAt } = input;
+  const { machines, kpis, cluster, metrics, defects, confusion, upload, generatedAt } = input;
 
   const counts = { red: 0, amber: 0, green: 0 };
   for (const machine of machines) {
@@ -87,7 +108,7 @@ export function buildReportHtml(input: ReportInput): string {
     String(index + 1),
     `<strong>${escapeHtml(machine.machine_id)}</strong>`,
     escapeHtml(lineName(machine.line)),
-    badge(machine.risk_level),
+    `${badge(machine.risk_level)}${machine.simulated ? ' <span class="tag">synthetic</span>' : ""}`,
     formatPct(machine.risk_score, 0),
     escapeHtml(driverLabel(machine)),
   ]);
@@ -117,6 +138,17 @@ export function buildReportHtml(input: ReportInput): string {
         formatPct(mean, 0),
       ];
     });
+
+  const kept = machines.filter((machine) => machine.simulated).length;
+  const uploadRows = (upload?.top ?? []).map((row) => {
+    const level: RiskLevel = row.level;
+    return [
+      `<strong>${escapeHtml(row.machine)}</strong>`,
+      badge(level),
+      formatPct(row.chance, 1),
+      escapeHtml(row.driver),
+    ];
+  });
 
   const defectRows = (defects ?? []).map((bin) => [
     `${bin.bin_start.toFixed(2)}–${bin.bin_end.toFixed(2)}%`,
@@ -320,6 +352,13 @@ export function buildReportHtml(input: ReportInput): string {
         )
       : "<p>No machine scores are available in the export.</p>"
   }
+  ${
+    kept > 0
+      ? `<p class="note"><strong>${formatInt(kept)} ${kept === 1 ? "machine shows" : "machines show"} a kept condition.</strong>
+  Those rows are marked <span class="tag">synthetic</span>: they come from the what-if sliders,
+  scored by the saved model, and they are not in the exported file.</p>`
+      : ""
+  }
 
   <h2>By production line</h2>
   ${table(
@@ -327,6 +366,24 @@ export function buildReportHtml(input: ReportInput): string {
     lineRows,
     [1, 2, 3, 4, 5],
   )}
+
+  ${
+    upload
+      ? `<h2>Latest uploaded file</h2>
+  <p class="lede"><strong>${escapeHtml(upload.fileName)}</strong> was scored in this browser${
+          humanTime(upload.savedAt) ? ` on ${humanTime(upload.savedAt)}` : ""
+        }: ${formatInt(upload.rowsScored)} rows across ${formatInt(upload.machineCount)} machines —
+  ${formatInt(upload.check)} to check now, ${formatInt(upload.watch)} to watch,
+  ${formatInt(upload.ok)} OK${upload.skipped > 0 ? `, ${formatInt(upload.skipped)} skipped` : ""}.
+  Scope: ${upload.everyRow ? "every row in the file" : "the latest row per machine"}.
+  The full report for the file is on the Upload page.</p>
+  ${
+    uploadRows.length > 0
+      ? table(["Machine", "Status", "Chance", "Main driver"], uploadRows, [2])
+      : ""
+  }`
+      : ""
+  }
 
   ${
     defectRows.length > 0
@@ -424,6 +481,7 @@ export async function downloadReport(input: {
   kpis: Kpis | null;
   cluster: ClusterInfo | null;
   metrics: ModelMetric[];
+  upload: UploadSummary | null;
 }): Promise<void> {
   const load = async <T,>(file: string): Promise<T | null> => {
     try {
