@@ -1,0 +1,64 @@
+# Local-only application stack: the scoring API and its own Postgres.
+# The Hadoop/YARN/Spark stack stays in docker/docker-compose.yml and is not
+# touched by this file.
+#
+#   docker compose -f docker/docker-compose.app.yml up --build
+#
+# Values come from .env at the repository root (see .env.example).
+
+name: yarnlens-app
+
+services:
+  db:
+    image: postgres:17.5-alpine
+    # The root .env is the single source for local values. Compose only reads a
+    # .env next to this file for ${...} interpolation, so it is also loaded into
+    # the containers here, and the documented command passes --env-file.
+    env_file:
+      - ../.env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-yarnlens}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-yarnlens}
+      POSTGRES_DB: ${POSTGRES_DB:-yarnlens}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - yarnlens-db:/var/lib/postgresql/data
+      - ../backend/db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-yarnlens} -d ${POSTGRES_DB:-yarnlens}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+
+  api:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-yarnlens}:${POSTGRES_PASSWORD:-yarnlens}@db:5432/${POSTGRES_DB:-yarnlens}
+      SIMULATED_INTERVAL_SECONDS: ${SIMULATED_INTERVAL_SECONDS:-3}
+      HISTORY_RETENTION: ${HISTORY_RETENTION:-100000}
+    ports:
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=4).read()",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
+
+volumes:
+  yarnlens-db:

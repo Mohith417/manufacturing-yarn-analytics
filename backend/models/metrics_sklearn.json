@@ -1,0 +1,54 @@
+{
+  "library": "scikit-learn",
+  "note": "Held-out metrics from ml/export_sklearn_models.py. Separate from the Spark MLlib metrics in model_metrics.json; the two are not comparable.",
+  "cutoff_date": "2024-10-01",
+  "features": [
+    "machine_age_years",
+    "operating_hours",
+    "temperature_c",
+    "vibration_mm_s",
+    "days_since_maintenance",
+    "past_maintenance_events"
+  ],
+  "train_rows": 392536,
+  "test_rows": 104941,
+  "trained_at": "2026-11-27T15:41:46+00:00",
+  "metrics": [
+    {
+      "model": "logistic_regression",
+      "precision": 0.18862128688604948,
+      "recall": 0.7282361847085541,
+      "f1": 0.29963402289303603,
+      "roc_auc": 0.8131338443973243,
+      "accuracy": 0.7428745676141832,
+      "true_positives": 5772,
+      "false_positives": 24829,
+      "false_negatives": 2154,
+      "true_negatives": 72186
+    },
+    {
+      "model": "decision_tree",
+      "precision": 0.18692972489067933,
+      "recall": 0.684960888215998,
+      "f1": 0.2937055370716005,
+      "roc_auc": 0.7942806364478809,
+      "accuracy": 0.7511839986278004,
+      "true_positives": 5429,
+      "false_positives": 23614,
+      "false_negatives": 2497,
+      "true_negatives": 73401
+    },
+    {
+      "model": "random_forest",
+      "precision": 0.18262898791637364,
+      "recall": 0.7207923290436538,
+      "f1": 0.29142011834319526,
+      "roc_auc": 0.8044374795831185,
+      "accuracy": 0.7352607655730363,
+      "true_positives": 5713,
+      "false_positives": 25569,
+      "false_negatives": 2213,
+      "true_negatives": 71446
+    }
+  ]
+}

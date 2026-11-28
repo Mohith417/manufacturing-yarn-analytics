@@ -2183,6 +2183,33 @@ kbd {
   margin-left: auto;
 }
 
+.sim__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.sim__actions .btn {
+  margin-left: 0;
+}
+
+.sim__note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 8px 0 0;
+  color: var(--text-3);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.sim__note svg {
+  flex: none;
+  margin-top: 1px;
+}
+
 .sim__col {
   display: flex;
   flex-direction: column;
@@ -3353,4 +3380,543 @@ kbd {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+/* --------------------------------------------------- eight-page navigation */
+
+/* The sidebar grew from five links to eight. The mobile tab bar is a single
+   row that scrolls sideways instead of squeezing labels into 360 px. */
+.tabbar {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabbar::-webkit-scrollbar {
+  display: none;
+}
+
+.tabbar__link {
+  flex: 0 0 auto;
+  min-width: 64px;
+}
+
+/* ==========================================================================
+   Premium finish
+   A single layer over the design system: display type, glass surfaces, and
+   hover states that make the dashboard feel alive without moving data around.
+   One accent (copper) plus one cool tint; green/amber/red stay status-only.
+   ========================================================================== */
+
+:root {
+  --font: "Inter Tight Variable", "Inter Variable", "Inter", system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  --font-display: "Fraunces Variable", "Fraunces", Georgia, "Times New Roman", serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --bg: #f4f0e7;
+  --surface: #fffdf8;
+  --surface-2: #f0ebe0;
+  --accent: #b8451a;
+  --accent-hover: #9c3812;
+  --accent-soft: #fbe7d8;
+  --accent-ink: #8a3311;
+}
+
+[data-theme="dark"] {
+  --bg: #070a0e;
+  --surface: rgba(17, 23, 30, 0.92);
+  --surface-2: rgba(30, 39, 48, 0.82);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.2);
+
+  --text: #f4f1e8;
+  --text-2: #b3bdc1;
+  --text-3: #8b979c;
+
+  --accent: #f08a4b;
+  --accent-hover: #ffa470;
+  --accent-soft: rgba(240, 138, 75, 0.14);
+  --accent-ink: #ffb489;
+
+  --chart-bar: #f08a4b;
+  --chart-bar-muted: #5c7180;
+  --chart-cursor: rgba(240, 138, 75, 0.08);
+  --ring: rgba(240, 138, 75, 0.34);
+  --shadow-sm: none;
+}
+
+body {
+  font-family: var(--font);
+  letter-spacing: -0.005em;
+}
+
+[data-theme="dark"] body {
+  background-image:
+    radial-gradient(60% 46% at 72% -8%, rgba(72, 108, 128, 0.22), transparent 70%),
+    radial-gradient(46% 40% at 6% 106%, rgba(240, 138, 75, 0.09), transparent 76%);
+  background-attachment: fixed;
+}
+
+/* ------------------------------------------------------------ typography */
+
+.brand__name {
+  font-weight: 640;
+  letter-spacing: -0.03em;
+}
+
+.page-head h1,
+.hero__line,
+.card h2,
+.panel-head h2 {
+  font-family: var(--font-display);
+  font-variation-settings: "SOFT" 0, "WONK" 0;
+  font-weight: 520;
+  letter-spacing: -0.02em;
+}
+
+.page-head h1 {
+  font-size: clamp(1.75rem, 2.4vw, 2.2rem);
+  line-height: 1.1;
+}
+
+.hero__line {
+  font-size: clamp(1.9rem, 3.4vw, 2.7rem);
+  line-height: 1.08;
+}
+
+.page-head__what,
+.hero__sub {
+  max-width: 68ch;
+}
+
+.page-head__ask,
+.panel-head__hint,
+.side-nav__label,
+.upload-headline__kicker {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.page-head__ask {
+  margin-right: 7px;
+  font-weight: 500;
+}
+
+/* ---------------------------------------------------------------- shell */
+
+[data-theme="dark"] .shell {
+  background: transparent;
+}
+
+.sidebar {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 40%),
+    color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+[data-theme="dark"] .sidebar {
+  border-right-color: rgba(255, 255, 255, 0.07);
+  box-shadow: 24px 0 70px -60px #000;
+}
+
+.side-nav__link {
+  position: relative;
+  transition: background 160ms ease, color 160ms ease, transform 180ms ease;
+}
+
+.side-nav__link::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 2px;
+  height: 0;
+  border-radius: 2px;
+  background: var(--accent);
+  transform: translateY(-50%);
+  transition: height 180ms ease;
+}
+
+.side-nav__link:hover {
+  transform: translateX(2px);
+}
+
+.side-nav__link.is-active::before {
+  height: 16px;
+}
+
+[data-theme="dark"] .side-nav__link.is-active {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 20%, transparent),
+    color-mix(in srgb, var(--accent) 4%, transparent)
+  );
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.side-foot__note {
+  font-size: 10.5px;
+  letter-spacing: 0.01em;
+}
+
+.topbar {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+[data-theme="dark"] .topbar {
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+}
+
+.searchbtn {
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.searchbtn:hover {
+  transform: translateY(-1px);
+}
+
+.icon-btn {
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.icon-btn:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  color: var(--accent-ink);
+}
+
+.badge-synthetic {
+  letter-spacing: 0.01em;
+}
+
+/* --------------------------------------------------------------- buttons */
+
+.btn {
+  transition: background 170ms ease, border-color 170ms ease, color 170ms ease,
+    transform 170ms ease, box-shadow 170ms ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn--primary {
+  background: linear-gradient(160deg, var(--accent), color-mix(in srgb, var(--accent) 78%, #000));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 10px 24px -18px var(--accent);
+}
+
+.btn--primary:hover {
+  background: linear-gradient(
+    160deg,
+    var(--accent-hover),
+    color-mix(in srgb, var(--accent) 84%, #000)
+  );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    0 14px 30px -16px var(--accent);
+}
+
+[data-theme="dark"] .btn--primary {
+  color: #1a0d05;
+}
+
+.btn--ghost:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+}
+
+/* ---------------------------------------------------------------- cards */
+
+.card {
+  background: var(--surface);
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+[data-theme="dark"] .card {
+  background:
+    linear-gradient(165deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012)),
+    rgba(13, 18, 24, 0.72);
+  border-color: rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 30px 70px -60px #000;
+}
+
+.card:hover {
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--border));
+}
+
+.panel-head h2 {
+  font-size: 17px;
+}
+
+.panel-head p {
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+/* --------------------------------------------------------------- tables */
+
+.table th {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.table tbody tr {
+  transition: background 150ms ease;
+}
+
+.table tbody tr:hover {
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
+[data-theme="dark"] .table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.table td {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ----------------------------------------------------------- plant tiles */
+
+.tile {
+  transition: transform 180ms cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 180ms ease,
+    filter 180ms ease;
+}
+
+.tile:hover,
+.tile:focus-visible {
+  transform: translateY(-2px);
+  filter: saturate(1.05);
+  box-shadow: 0 12px 24px -18px var(--text);
+}
+
+[data-theme="dark"] .tile:hover,
+[data-theme="dark"] .tile:focus-visible {
+  box-shadow: 0 14px 30px -18px #000;
+}
+
+/* ------------------------------------------------------------- controls */
+
+.field__input,
+.field select {
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.field__input:focus-within {
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
+.table th button:hover {
+  color: var(--accent-ink);
+}
+
+a {
+  transition: color 140ms ease;
+}
+
+.skip-link {
+  transition: top 150ms ease, transform 150ms ease;
+}
+
+/* ==========================================================================
+   Horizontal navigation
+   The dashboard is one column now: brand and actions on the header row, the
+   eight pages as one scrollable pill bar underneath. No sidebar, no bottom tab
+   bar, no second navigation pattern on small screens.
+   ========================================================================== */
+
+.shell {
+  margin-left: 0;
+}
+
+.sidebar,
+.tabbar,
+.brand .side-foot {
+  display: none;
+}
+
+.brand--topbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0;
+  margin-right: 4px;
+  border: 0;
+  background: none;
+  color: var(--text);
+}
+
+.brand--topbar .brand__mark {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 8px;
+  background: linear-gradient(150deg, #f7a870, #c0561f 62%, #8f3512);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 8px 18px -14px rgba(240, 138, 75, 0.9);
+}
+
+.brand--topbar .brand__mark svg {
+  width: 17px;
+  height: 17px;
+  color: #fff;
+}
+
+.brand--topbar .brand__name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 560;
+  letter-spacing: -0.02em;
+}
+
+.brand--topbar .brand__name span {
+  color: var(--accent);
+}
+
+.topnav {
+  position: sticky;
+  top: var(--header-h);
+  z-index: 29;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.topnav__inner {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  max-width: 1260px;
+  margin: 0 auto;
+  padding: 8px 26px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.topnav__inner::-webkit-scrollbar {
+  display: none;
+}
+
+.topnav__link {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  transition: color 160ms ease, background 160ms ease, border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.topnav__link svg {
+  color: var(--text-3);
+  transition: color 160ms ease;
+}
+
+.topnav__link:hover {
+  transform: translateY(-1px);
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.topnav__link:hover svg {
+  color: var(--accent);
+}
+
+.topnav__link.is-active {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 18%, transparent),
+    color-mix(in srgb, var(--accent) 5%, transparent)
+  );
+  border-color: color-mix(in srgb, var(--accent) 34%, transparent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+.topnav__link.is-active svg {
+  color: var(--accent);
+}
+
+/* A hairline under the active pill, so the row reads as a navigation rail. */
+.topnav__link.is-active::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -9px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+[data-theme="dark"] .topnav__link.is-active {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 10px 26px -22px var(--accent);
+}
+
+.main {
+  max-width: 1260px;
+  padding-top: 18px;
+}
+
+@media (max-width: 1000px) {
+  .main {
+    padding: 14px 16px 28px;
+  }
+
+  .topnav__inner {
+    padding: 8px 14px;
+  }
+}
+
+@media (max-width: 560px) {
+  .main {
+    padding: 12px 12px 24px;
+  }
+
+  .brand--topbar .brand__name {
+    display: none;
+  }
+
+  .topnav__link {
+    height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .topnav__link.is-active::after {
+    bottom: -8px;
+  }
 }
