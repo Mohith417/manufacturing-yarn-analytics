@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import EmptyState from "../components/EmptyState";
 import Icon from "../components/Icon";
 import MachineDrawer from "../components/MachineDrawer";
@@ -26,6 +26,7 @@ import {
 } from "../lib/scoring";
 import { useApiHealth } from "../lib/useApiHealth";
 import { downloadUploadReport } from "../lib/uploadReport";
+import { saveLastUpload } from "../lib/lastUpload";
 import "../styles-pages.css";
 
 const MODEL_LABEL: Record<ModelName, string> = {
@@ -258,6 +259,37 @@ export default function Upload({
   const tableRows = state.rows.length > 0 && !state.apiNote ? state.rows : rows;
   const scoredBy = state.rows.length > 0 && !state.apiNote ? state.scoredBy : "browser";
   const counts = countLevels(tableRows);
+
+  // The topbar report is reachable from every page, so the file scored here is
+  // remembered for the session and read again at click time: the report always
+  // describes the rows currently on screen, not a snapshot from page load.
+  useEffect(() => {
+    if (!state.report || tableRows.length === 0) {
+      return;
+    }
+    saveLastUpload({
+      fileName: state.name,
+      savedAt: new Date().toISOString(),
+      rowsScored: tableRows.length,
+      machineCount: new Set(tableRows.map((row) => row.machineId)).size,
+      check: counts.check,
+      watch: counts.watch,
+      ok: counts.ok,
+      skipped: state.report.skipped.length,
+      everyRow: showAll,
+      top: tableRows.slice(0, 10).map((row) => {
+        const driver = row.drivers[0];
+        return {
+          machine: row.machineId,
+          level: row.level,
+          chance: row.score,
+          driver: driver
+            ? `${driver.label} ${driver.display} ${driver.direction === "above" ? "\u2191" : "\u2193"}`
+            : "No single reading stands out",
+        };
+      }),
+    });
+  }, [tableRows, counts.check, counts.watch, counts.ok, showAll, state.name, state.report]);
 
   function downloadResults() {
     const header = [
