@@ -16,7 +16,13 @@ import {
 import { formatPct, type MachineRisk, type ModelCoefficients, type RiskRule } from "../lib/data";
 import { contributions } from "../lib/derive";
 import { scoreWithApi, type ModelName } from "../lib/api";
-import { countLevels, scoreReadings, uploadHeadline, type ScoredReading } from "../lib/scoring";
+import {
+  countLevels,
+  driversFor,
+  scoreReadings,
+  uploadHeadline,
+  type ScoredReading,
+} from "../lib/scoring";
 import { useApiHealth } from "../lib/useApiHealth";
 import "../styles-pages.css";
 
@@ -216,6 +222,7 @@ export default function Upload({
           score: result.risk,
           level: result.status,
           reasons: result.top_factors,
+          drivers: model ? driversFor(reading.features, model) : [],
         } satisfies ScoredReading;
       });
       setState((current) => ({
@@ -558,20 +565,26 @@ export default function Upload({
               <table className="table table--upload">
                 <thead>
                   <tr>
+                    <th scope="col" className="col-rank">
+                      #
+                    </th>
                     <th scope="col">Machine</th>
                     {showAll && <th scope="col">Timestamp</th>}
-                    <th scope="col">Chance of breakdown</th>
+                    <th scope="col" className="col-score">
+                      Chance of breakdown
+                    </th>
                     <th scope="col">Status</th>
-                    <th scope="col">Top reasons</th>
+                    <th scope="col">Why this score</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {tableRows.map((row) => (
+                  {tableRows.map((row, index) => (
                     <tr
                       key={row.key}
                       className={`is-clickable${selectedKey === row.key ? " is-selected" : ""}`}
                       onClick={() => setSelectedKey(row.key)}
                     >
+                      <td className="num muted">{index + 1}</td>
                       <td>
                         <button
                           type="button"
@@ -589,7 +602,7 @@ export default function Upload({
                           {row.timestamp ? row.timestamp.slice(0, 16).replace("T", " ") : `Line ${row.line}`}
                         </td>
                       )}
-                      <td className="num">
+                      <td className="num col-score">
                         <span className={`risk-cell risk-cell--${row.level}`}>
                           <strong>{formatPct(row.score, 1)}</strong>
                           <span className="risk-bar">
@@ -600,7 +613,30 @@ export default function Upload({
                       <td>
                         <RiskBadge level={row.level} size="sm" />
                       </td>
-                      <td className="upload-reasons">{row.reasons.join(" · ")}</td>
+                      <td className="upload-reasons">
+                        {row.drivers.length === 0 ? (
+                          <span className="muted">No single reading stands out</span>
+                        ) : (
+                          <ul className="drivers">
+                            {row.drivers.map((driver) => (
+                              <li className="driver" key={driver.key}>
+                                <span className="driver__label">{driver.label}</span>
+                                <span className="driver__value">{driver.display}</span>
+                                <span
+                                  className={`driver__dir driver__dir--${driver.direction}`}
+                                  title={
+                                    driver.ratio === null
+                                      ? `Fleet average ${driver.meanDisplay}`
+                                      : `${driver.direction} the fleet average of ${driver.meanDisplay}`
+                                  }
+                                >
+                                  {driver.direction === "above" ? "\u2191" : "\u2193"}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

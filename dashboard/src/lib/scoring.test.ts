@@ -82,6 +82,44 @@ describe("scoreReadings", () => {
     expect(uploadHeadline(rows)).toMatch(/needs a check now/);
   });
 
+  it("keeps each driver's reading, unit and fleet average separate", () => {
+    const [row] = scoreReadings(
+      [
+        {
+          line: 2,
+          machineId: "M013",
+          timestamp: null,
+          features: {
+            machine_age_years: 16.6,
+            operating_hours: 23.91,
+            temperature_c: 74.12,
+            vibration_mm_s: 8.435,
+            days_since_maintenance: 135,
+            past_maintenance_events: 2,
+          },
+        },
+      ],
+      model,
+      { red_at: 0.7, amber_at: 0.4 },
+    );
+
+    const vibration = row.drivers.find((driver) => driver.key === "vibration_mm_s");
+    expect(vibration).toBeDefined();
+    // A unit is always attached, and the decimals are fixed for the table.
+    expect(vibration?.display).toMatch(/^8\.4\d mm\/s$/);
+    expect(vibration?.direction).toBe("above");
+    expect(vibration?.meanDisplay).toMatch(/mm\/s$/);
+    expect(vibration?.ratio).toBeGreaterThan(1);
+
+    // Days carry a plain integer and a word, never a raw float.
+    const days = row.drivers.find((driver) => driver.key === "days_since_maintenance");
+    expect(days?.display).toBe("135 days");
+
+    // The downloaded CSV sentence repeats the value and the fleet average.
+    expect(row.reasons[0]).toContain("fleet average");
+    expect(row.reasons[0]).toContain("mm/s");
+  });
+
   it("uses the app's default thresholds when none are supplied", () => {
     const [row] = scoreReadings(
       [
