@@ -2502,9 +2502,10 @@
 .yl-brand__mark {
   width: 34px;
   height: 34px;
-  border-radius: 50%;
+  /* Same tile as favicon.svg: a 25%-rounded copper square with the spool. */
+  border-radius: 9px;
   background:
-    radial-gradient(120% 120% at 30% 18%, #ffb886 0%, #e07a3c 46%, #a53f14 100%);
+    linear-gradient(150deg, #d9612b 0%, #b8451a 56%, #93330f 100%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.34),
     inset 0 -6px 12px -8px rgba(0, 0, 0, 0.55),
@@ -2513,12 +2514,12 @@
 }
 
 .yl-brand__mark svg {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
 }
 
 .yl-brand:hover .yl-brand__mark {
-  transform: rotate(-8deg);
+  transform: translateY(-1px);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.34),
     0 12px 26px -12px rgba(240, 138, 75, 1);
