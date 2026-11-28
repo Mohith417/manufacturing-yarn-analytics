@@ -25,6 +25,7 @@ import {
   type ScoredReading,
 } from "../lib/scoring";
 import { useApiHealth } from "../lib/useApiHealth";
+import { downloadUploadReport } from "../lib/uploadReport";
 import "../styles-pages.css";
 
 const MODEL_LABEL: Record<ModelName, string> = {
@@ -507,10 +508,32 @@ export default function Upload({
               </label>
             )}
             {tableRows.length > 0 && (
-              <button type="button" className="btn" onClick={downloadResults}>
-                <Icon name="download" size={14} />
-                Download results
-              </button>
+              <>
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() =>
+                    downloadUploadReport({
+                      rows: tableRows,
+                      fileName: state.name,
+                      fileSize: state.size,
+                      report: state.report,
+                      model,
+                      rule,
+                      everyRow: showAll,
+                      generatedAt: new Date(),
+                    })
+                  }
+                  title="Download a printable report of this file's scored rows"
+                >
+                  <Icon name="download" size={14} />
+                  Download report
+                </button>
+                <button type="button" className="btn" onClick={downloadResults}>
+                  <Icon name="download" size={14} />
+                  Download results
+                </button>
+              </>
             )}
           </div>
         }

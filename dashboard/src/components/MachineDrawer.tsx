@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  STATUS_LABEL,
   formatDecimal,
   formatPct,
   type MachineRisk,
   type ModelCoefficients,
+  type RiskLevel,
   type RiskRule,
 } from "../lib/data";
 import { contributions, leadCheck, machineSentence } from "../lib/derive";
@@ -64,6 +66,8 @@ export default function MachineDrawer({
   modelError,
   rule,
   onClose,
+  onApply,
+  onRestore,
 }: {
   machine: MachineRisk | null;
   machines: MachineRisk[];
@@ -71,6 +75,15 @@ export default function MachineDrawer({
   modelError: string | null;
   rule: RiskRule | null;
   onClose: () => void;
+  /** Keep the sliders' readings as this machine's condition. */
+  onApply?: (
+    machineId: string,
+    features: Record<string, number>,
+    score: number,
+    level: RiskLevel,
+  ) => void;
+  /** Drop a kept change and show the exported reading again. */
+  onRestore?: (machineId: string) => void;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [values, setValues] = useState<Record<string, number>>({});
@@ -178,6 +191,15 @@ export default function MachineDrawer({
           </div>
           <div className="drawer__head-actions">
             <RiskBadge level={machine.risk_level} />
+            {machine.simulated && (
+              <span
+                className="badge-synthetic"
+                title="A reading kept from the sliders, scored by the saved model"
+              >
+                <span className="badge-synthetic__dot" aria-hidden="true" />
+                Synthetic
+              </span>
+            )}
             <button
               type="button"
               className="icon-btn"
@@ -245,8 +267,10 @@ export default function MachineDrawer({
           <section className="drawer__section">
             <h3>Try changes</h3>
             <p className="drawer__hint">
-              Move a slider to see a hypothetical score with the saved model. Nothing
-              is written back.
+              Move a slider to see the score with the saved model, then keep the reading
+              if it is the machine&rsquo;s new condition. A kept reading is labelled
+              synthetic: the exported file is never changed, and Restore brings the
+              original reading back.
             </p>
 
             {model ? (
@@ -312,16 +336,63 @@ export default function MachineDrawer({
                           : `${delta > 0 ? "+" : "−"}${Math.abs(delta).toFixed(0)} points`}
                       </span>
                     )}
-                    <button
-                      type="button"
-                      className="btn btn--ghost btn--sm"
-                      onClick={() => setValues({ ...machine.features })}
-                      disabled={!changed}
-                    >
-                      <Icon name="reset" size={14} />
-                      Reset
-                    </button>
+                    <div className="sim__actions">
+                      {machine.simulated && onRestore && (
+                        <button
+                          type="button"
+                          className="btn btn--ghost btn--sm"
+                          onClick={() => onRestore(machine.machine_id)}
+                          title="Forget the kept reading and show the exported one"
+                        >
+                          <Icon name="reset" size={14} />
+                          Restore
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className="btn btn--ghost btn--sm"
+                        onClick={() => setValues({ ...machine.features })}
+                        disabled={!changed}
+                      >
+                        <Icon name="reset" size={14} />
+                        Reset
+                      </button>
+                      {onApply && (
+                        <button
+                          type="button"
+                          className="btn btn--primary btn--sm"
+                          disabled={!changed || simulated === null || simulatedLevel === null}
+                          onClick={() => {
+                            if (simulated === null || simulatedLevel === null) {
+                              return;
+                            }
+                            onApply(
+                              machine.machine_id,
+                              { ...machine.features, ...values },
+                              simulated,
+                              simulatedLevel,
+                            );
+                          }}
+                          title="Keep these readings as this machine's condition, marked as synthetic"
+                        >
+                          <Icon name="check" size={14} />
+                          Keep as {simulatedLevel ? STATUS_LABEL[simulatedLevel] : "new condition"}
+                        </button>
+                      )}
+                    </div>
                   </div>
+                  {machine.simulated && machine.applied_at && (
+                    <p className="sim__note">
+                      <Icon name="info" size={13} /> Kept from the sliders on{" "}
+                      {new Date(machine.applied_at).toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                      . A synthetic condition scored by the saved model, not a reading from the
+                      cluster.
+                    </p>
+                  )}
                 </div>
               </>
             ) : (

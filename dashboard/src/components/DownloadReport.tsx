@@ -42,11 +42,11 @@ export default function DownloadReport() {
       className="btn topbar__download"
       onClick={handleClick}
       disabled={busy || !ready}
-      title="Download a printable plant report"
+      title="Download a printable report of the sample plant that ships with the dashboard"
     >
       <Icon name="download" size={15} />
       <span className="topbar__download-label">
-        {busy ? "Preparing…" : "Download report"}
+        {busy ? "Preparing…" : "Plant report"}
       </span>
     </button>
   );
