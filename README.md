@@ -126,13 +126,14 @@ dashboard top bar can download a printable HTML report of the same exported JSON
 
 ## Two ways to run the dashboard
 
-**Static mode (default, no server).** `npm run dev` in `dashboard/` is enough.
-The landing page, Today, Machines, Quality, Accuracy, How it works and
-**Upload and score** all work. Upload reads the CSV in the browser with the
-exported coefficients and never sends it anywhere. The three live pages say
-"Live mode needs the local API" and nothing in the console is an error.
+**Static mode (default, no server).** `npm run dev` in `dashboard/` is enough,
+and so is any static host serving `dist/`. Every page works without a backend:
+Upload scores a CSV in the browser with the exported coefficients, **Live feed**
+drifts and scores a simulated batch every three seconds, and **History** keeps
+those readings in this browser's `localStorage`. Nothing is uploaded, and
+nothing in the console is an error.
 
-**Live mode (the local API).** One command brings up the API and its own
+**Optional: the scoring API.** One command brings up the API and its own
 Postgres (this is a different container from the Hive metastore and does not
 touch the Hadoop stack):
 
@@ -142,11 +143,11 @@ docker compose --env-file .env -f docker/docker-compose.app.yml up --build
 ```
 
 Then `npm run dev` and open the dashboard. `GET /api/health` answers on
-<http://127.0.0.1:8000/api/health>; the front end probes it once at startup.
-With the API up, **Live feed** streams a simulated reading per machine every
-`SIMULATED_INTERVAL_SECONDS` seconds, **History** reads stored scores from
-Postgres, and Upload offers the three scikit-learn models. Stop the containers
-and the app returns to static mode without a reload error.
+<http://127.0.0.1:8000/api/health>; the front end probes it once at startup. With
+the API up, Upload also offers the three scikit-learn models (decision tree and
+random forest, which the browser cannot run) and per-machine history is
+available from `GET /api/history`. Stop the containers and the app returns to
+static mode without a reload error.
 
 ### The four added features
 
@@ -154,8 +155,8 @@ and the app returns to static mode without a reload error.
 |---|---|---|
 | A. Upload and score | `#upload` | CSV parsed and scored in the browser; nothing leaves the machine |
 | B. Scoring API | `backend/app/main.py` | `POST /api/score` with the saved joblib models |
-| C. Simulated live feed | `#live` | `GET /api/stream` (SSE), one batch per interval, labelled Simulated |
-| D. History | `#history` | Postgres tables `machines`, `readings`, `scores`; `GET /api/history`, `GET /api/trends`, `DELETE /api/history?confirm=clear-all` |
+| C. Simulated live feed | `#live` | Browser simulator (`src/lib/live.ts`): each machine's exported reading drifts, the saved logistic regression scores it every 3 s, labelled Simulated |
+| D. History | `#history` | Readings kept in the browser (`src/lib/history.ts`), 24 hours seeded on first visit; the API's `/api/history` remains available for a Postgres-backed store |
 
 The upload page has a working sample plus three deliberately broken files
 (`bad_missing_column.csv`, `bad_empty_cells.csv`, `bad_text_values.csv`) so the
@@ -164,7 +165,7 @@ file-check report can be tested without inventing data.
 ### Tests
 
 ```powershell
-cd dashboard; npm test          # 16 tests: CSV reader/validator, scoring vs Python
+cd dashboard; npm test          # 24 tests: CSV reader/validator, scoring vs Python, live simulator, history store
 cd backend;   ..\.venv\Scripts\python.exe -m pytest tests -q   # 10 tests
 ```
 
