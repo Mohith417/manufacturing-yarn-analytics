@@ -166,13 +166,26 @@ Three pages join the original five:
 | Route | Page | Needs the API |
 |---|---|---|
 | `#upload` | Upload and score | No — scores in the browser; model picker appears when the API is up |
-| `#live` | Live feed (simulated, SSE) | Yes |
-| `#history` | Stored scores and hourly trend | Yes |
+| `#live` | Live feed (simulated, in the browser) | No |
+| `#history` | Stored scores and hourly trend | No — readings live in this browser's `localStorage` |
 
-The API lives in `../backend` and is started with
+Live feed drifts each machine's exported reading with the same distributions as
+`../backend/app/simulator.py` and scores every batch with the saved logistic
+regression (`src/lib/live.ts`). History appends those batches, appends one row
+per machine from a scored upload, and seeds 24 hourly batches on a first visit
+so the trend is not empty (`src/lib/history.ts`). Clearing it only empties this
+browser; nothing on a server changes.
+
+The scoring API lives in `../backend` and is optional:
 `docker compose --env-file .env -f docker/docker-compose.app.yml up --build`.
-Without it the three pages show a friendly "needs the local API" card and the
-rest of the app keeps working.
+With it up, Upload offers the decision-tree and random-forest models.
+
+### Deploying
+
+`npm run build` writes `dist/`, which is a plain static site (relative asset
+paths, hash routes). `sites/manifest.json` plus `sites/worker.js` deploy that
+folder as a Worker that serves `env.ASSETS`, so the hosted build behaves exactly
+like the dev server. Rebuild before every deploy.
 
 Upload samples live in `public/samples/`; regenerate them with
 `python scripts/make_sample_csvs.py`. Tests: `npm test`.
