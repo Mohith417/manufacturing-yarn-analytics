@@ -123,6 +123,9 @@ Web UIs: NameNode <http://localhost:9870>, YARN <http://localhost:8088>,
 HiveServer2 <http://localhost:10002>. The dashboard opens on its landing page at
 <http://127.0.0.1:5173/#home>; `#today` goes straight to the report, and the
 dashboard top bar can download a printable HTML report of the same exported JSON.
+That report is built when you press the button: it includes any condition kept
+from the what-if sliders (marked synthetic) and the file most recently scored on
+the Upload page, which has its own detailed per-file report.
 
 ## Two ways to run the dashboard
 
