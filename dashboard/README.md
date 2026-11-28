@@ -58,19 +58,33 @@ the same design tokens, brand mark and JSON files as the pages behind it.
   watch / healthy with the real counts, beside the three exported figures and two
   chips naming the Spark/Hadoop cluster and the shipped model.
 
-## Downloadable report
+## Downloadable reports
 
-**Download report** in the dashboard top bar builds a self-contained, printable HTML
-file in the browser: `yarnlens-plant-report-YYYY-MM-DD.html` (about 11 KB, no
-scripts or external assets). Open it anywhere and print it to PDF.
+There are two, and both are built **when the button is pressed**, from the state
+on screen — never from a snapshot taken at page load. Neither needs a server.
 
-It reads the JSON already on the page plus `defect_distribution.json` and
-`confusion_matrix.json`, fetched only when the button is pressed — there is no
-server endpoint. Sections: summary counts and the status rule, the ten machines
-to check first with their main driver, a per-line breakdown, defect-rate ranges,
-the model comparison table with the confusion matrix in plain words, the cluster
-and source files, and a "how to read this report" note. The builder lives in
-`src/lib/report.ts`.
+**Plant report** in the top bar (`yarnlens-plant-report-YYYY-MM-DD.html`, about
+13 KB, no scripts or external assets) reads the JSON already on the page plus
+`defect_distribution.json` and `confusion_matrix.json`. Sections: summary counts
+and the status rule, the ten machines to check first with their main driver, a
+per-line breakdown, **the file last scored on the Upload page**, defect-rate
+ranges, the model comparison table with the confusion matrix in plain words, the
+cluster and source files, and a "how to read this report" note. It also merges
+any condition kept from the what-if sliders and marks those rows `synthetic`,
+with a note saying they are not in the export. Builder: `src/lib/report.ts`.
+
+**Download report** on the Upload page (named after the file, `<file>-report-YYYY-MM-DD.html`,
+about 16 KB) is the per-file analysis of the rows currently in the table: file checks,
+the top 15 rows with the reading value, unit and ↑/↓ against the fleet average,
+a ten-band chance distribution, min/mean/max per reading, and every skipped row
+with its reason. It follows the scope toggle (every row vs the latest row per
+machine). Builder: `src/lib/uploadReport.ts`.
+
+The plant report finds the last upload through `sessionStorage`
+(`yarnlens.lastUpload.v1`, summary only: counts and the top ten machines), so the
+section survives a page change but never leaves the browser and is gone when the
+tab closes. It is written by `src/pages/Upload.tsx` and read at click time by
+`src/components/DownloadReport.tsx`.
 
 ## Pages
 
@@ -78,7 +92,8 @@ and source files, and a "how to read this report" note. The builder lives in
 |---|---|
 | Today | Generated headline ("N machines need attention today"), three status cards, plant-floor tile grid grouped by line, Start here top five with the leading factor, and three compact cards for production, downtime and defects — each with a one-line reading computed from the data |
 | Machines | Search by machine, line or main driver; filter by line and status; sortable table; clicking a row opens the machine panel |
-| Machine panel | Slide-over reused from the grid, the table and Ctrl+K: the risk sentence, five key readings, "Why this score" bars, the what-if sliders with current vs simulated risk, and one rule-of-thumb focus suggestion |
+| Machine panel | Slide-over reused from the grid, the table and Ctrl+K: the risk sentence, five key readings, "Why this score" bars, the what-if sliders with current vs simulated risk, one rule-of-thumb focus suggestion, and **Keep as OK / Watch / Check now**, which writes the simulated condition into the fleet as a `Synthetic` row with a Restore button |
+| Upload | Drop or pick a CSV, choose the scope (latest row per machine or every row), read the headline plus counts, the table with drivers and the skipped rows, and download either the results CSV or the per-file report |
 | Quality | Defect rate by range, the correlation heatmap on a blue-to-red diverging scale, and a generated "what this means" line under each chart |
 | Accuracy | Plain verdict from the confusion matrix ("Catches 73% of real downtime…"), model comparison, what pushes the score, and the four outcomes with plain labels |
 | How it works | Three steps from factory data to the dashboard, the cluster card, what the setup is not, and the GitHub link |
@@ -130,6 +145,13 @@ and the downloadable report. There is no sidebar and no bottom tab bar.
 
 `machine_risk.json` also carries each machine's current feature values, which the
 what-if sliders use as their starting point.
+
+A condition kept from the sliders is **not** written to that file. It lives in
+`localStorage` under `yarnlens.overrides.v1` (`src/lib/overrides.ts`), is merged
+over the loaded fleet at render time with `withOverrides(machines, model)` — the
+score is recomputed from the saved coefficients, not copied from the slider —
+and is flagged `simulated: true` plus `applied_at`, which the UI shows as a
+`Synthetic` chip. Restore deletes the entry and the exported row comes back.
 
 ## Risk badge rule
 
