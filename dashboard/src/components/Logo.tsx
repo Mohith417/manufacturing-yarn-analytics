@@ -1,4 +1,21 @@
 /**
+ * Compact mark for the landing header: three concentric rings and a centre
+ * dot, the wave field reduced to a lens. Reads at 20px where the spool
+ * illustration turns into a smudge.
+ */
+export function RingMark() {
+  return (
+    <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+      <g fill="none" stroke="#FFFFFF" strokeLinecap="round">
+        <circle cx="16" cy="16" r="11" strokeWidth="1.3" opacity="0.34" />
+        <circle cx="16" cy="16" r="6.6" strokeWidth="1.5" opacity="0.7" />
+      </g>
+      <circle cx="16" cy="16" r="2.5" fill="#FFFFFF" />
+    </svg>
+  );
+}
+
+/**
  * YarnLens mark: a yarn spool whose thread unwinds into a rising data line.
  * Inline SVG so it inherits nothing from the network and stays crisp.
  */

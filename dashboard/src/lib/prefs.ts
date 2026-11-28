@@ -6,7 +6,7 @@ export type ResolvedTheme = "light" | "dark";
 // Versioned: the dark-first redesign must not inherit an old "system" value
 // saved by an earlier build. Bumping the key gives every visitor the new look
 // once, and their next choice is still remembered.
-const THEME_KEY = "yarnlens.theme.v2";
+const THEME_KEY = "yarnlens.theme.v3";
 const TOUR_KEY = "yarnlens.tour.dismissed";
 
 /**

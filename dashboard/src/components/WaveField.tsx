@@ -3,11 +3,11 @@ import "../styles-wave.css";
 
 type Variant = "hero" | "ambient";
 
-const RING_COUNT: Record<Variant, number> = { hero: 110, ambient: 68 };
-const PER_RING: Record<Variant, number> = { hero: 260, ambient: 150 };
+const RING_COUNT: Record<Variant, number> = { hero: 300, ambient: 68 };
+const PER_RING: Record<Variant, number> = { hero: 230, ambient: 150 };
 // Wider spacing on the full-page field: at the hero camera distance the
 // tighter ambient step turns the rings into indistinguishable dust.
-const RING_STEP: Record<Variant, number> = { hero: 0.52, ambient: 0.27 };
+const RING_STEP: Record<Variant, number> = { hero: 0.46, ambient: 0.27 };
 
 /**
  * A field of glowing points arranged in concentric rings. A vertex shader
@@ -180,20 +180,22 @@ export default function WaveField({
             float t = uTime;
             float radius = aRing;
             // Inner rings turn a little faster, as on the reference record.
-            float spin = 0.045 + 0.03 * aSeed;
+            float spin = 0.075 + 0.05 * aSeed;
             float angle = aAngle + t * spin * (1.5 - radius * 0.028);
 
             // Three travelling waves sum into one smooth outward ripple.
-            float falloff = smoothstep(0.0, 2.6, radius) * exp(-radius * 0.032);
-            float w1 = sin(radius * 0.78 - t * 1.9);
-            float w2 = sin(radius * 0.44 + t * 1.15 + aSeed * 1.7);
-            float w3 = sin(radius * 2.35 - t * 0.75 + aSeed);
+            // The radial decay is gentle on purpose: a steep falloff leaves
+            // only a small bright patch in the middle of a full-page field.
+            float falloff = smoothstep(0.0, 2.6, radius) * exp(-radius * 0.0135);
+            float w1 = sin(radius * 0.78 - t * 2.4);
+            float w2 = sin(radius * 0.44 + t * 1.55 + aSeed * 1.7);
+            float w3 = sin(radius * 2.35 - t * 1.05 + aSeed);
             float wave = (w1 * 0.58 + w2 * 0.3 + w3 * 0.12) * falloff;
 
             float breathe = 1.0 + sin(t * 0.55) * 0.018;
             vec3 point = vec3(
               cos(angle) * radius * breathe,
-              wave * 1.9,
+              wave * 2.6,
               sin(angle) * radius * breathe
             );
 
@@ -201,10 +203,10 @@ export default function WaveField({
             gl_Position = projectionMatrix * view;
             gl_PointSize = uSize * uPixelRatio
               * (0.5 + 0.95 * clamp(wave * 0.5 + 0.5, 0.0, 1.0))
-              * (32.0 / max(1.0, -view.z));
+              * (38.0 / max(1.0, -view.z));
             vGlow = clamp(wave * 0.95 + 0.45, 0.0, 1.0);
             // Dissolve the outermost rings instead of ending on a visible rim.
-            vFade = 1.0 - smoothstep(45.0, 57.0, radius);
+            vFade = 1.0 - smoothstep(112.0, 136.0, radius);
           }
         `,
         fragmentShader: /* glsl */ `
@@ -239,21 +241,25 @@ export default function WaveField({
       scene.add(points);
 
       const cameraAt = (time: number) => {
-        const drift = reduceMotion ? 0 : time;
+        const drift = time * (reduceMotion ? 0.3 : 1);
         if (variant === "hero") {
           // Steeper and closer than the ambient field: the record fills the
           // frame while the camera drifts by a couple of degrees at most.
           // Almost edge-on, like a record: the rings read as concentric
           // ellipses instead of a bowl of dots.
-          // Looking almost straight down at the record. A side-on camera leaves
-          // an empty horizon band across the top of a full-page field; from
-          // above, the rings reach every edge of the viewport with no border.
+          // Side angle, like a record seen across a table. The field is large
+          // enough (136 units) that its far edge sits past the top of the
+          // viewport at this tilt, so the page is filled without a horizon
+          // line, and the outer rings dissolve instead of stopping.
           camera.position.set(
-            Math.sin(drift * 0.09) * 1.2,
-            38 + Math.cos(drift * 0.07) * 0.35,
-            7 + Math.sin(drift * 0.045) * 0.5,
+            Math.sin(drift * 0.11) * 2.4,
+            11 + Math.cos(drift * 0.07) * 0.3,
+            22 + Math.sin(drift * 0.05) * 0.6,
           );
           camera.lookAt(0, 0, 0);
+          // The dots themselves travel along the rings; without this the
+          // ripples alone read as almost still on a large screen.
+          points.rotation.y = drift * 0.22;
         } else {
           camera.position.set(
             Math.sin(drift * 0.055) * 1.4,
@@ -298,7 +304,7 @@ export default function WaveField({
       };
 
       const play = () => {
-        if (reduceMotion || disposed || frame !== 0 || !visible || !onScreen) {
+        if (disposed || frame !== 0 || !visible || !onScreen) {
           return;
         }
         frame = window.requestAnimationFrame(tick);
