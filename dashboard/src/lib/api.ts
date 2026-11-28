@@ -70,8 +70,26 @@ async function request<T>(path: string, init: RequestInit = {}, timeoutMs = 6000
   }
 }
 
+/**
+ * A hosted build must not probe the visitor's own machine: the request would be
+ * refused and only add a console error. The probe runs on a loopback origin, or
+ * wherever VITE_API_URL points the front end at a real server.
+ */
+function apiCouldExist(): boolean {
+  if (import.meta.env.VITE_API_URL) {
+    return true;
+  }
+  if (typeof window === "undefined") {
+    return false;
+  }
+  return window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost";
+}
+
 /** One probe at startup. `null` means "no local API", not an error to show. */
 export async function fetchHealth(): Promise<Health | null> {
+  if (!apiCouldExist()) {
+    return null;
+  }
   try {
     const health = await request<Health>("/api/health", { method: "GET" }, 2500);
     return health?.status === "ok" ? health : null;
