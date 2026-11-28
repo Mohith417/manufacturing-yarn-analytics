@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import CommandPalette from "./components/CommandPalette";
 import DownloadReport from "./components/DownloadReport";
 import Icon from "./components/Icon";
@@ -11,7 +11,14 @@ import {
   type Kpis,
   type MachineRisk,
   type ModelCoefficients,
+  type RiskLevel,
 } from "./lib/data";
+import {
+  OVERRIDE_EVENT,
+  applyOverride,
+  clearOverride,
+  withOverrides,
+} from "./lib/overrides";
 import { PAGE_IDS, type PageId } from "./lib/nav";
 import { useTheme } from "./lib/prefs";
 import Accuracy from "./pages/Accuracy";
@@ -47,7 +54,23 @@ export default function App() {
   const model = useJson<ModelCoefficients>("model_coefficients");
   const kpis = useJson<Kpis>("kpis");
 
-  const machineList = machines.data ?? [];
+  // A kept what-if change lives in localStorage, not in the exported JSON, so
+  // the fleet is re-merged whenever one is applied or restored.
+  const [overrideTick, setOverrideTick] = useState(0);
+  useEffect(() => {
+    const refresh = () => setOverrideTick((tick) => tick + 1);
+    window.addEventListener(OVERRIDE_EVENT, refresh);
+    window.addEventListener("storage", refresh);
+    return () => {
+      window.removeEventListener(OVERRIDE_EVENT, refresh);
+      window.removeEventListener("storage", refresh);
+    };
+  }, []);
+
+  const machineList = useMemo(
+    () => withOverrides(machines.data ?? [], model.data),
+    [machines.data, model.data, overrideTick],
+  );
   const selected = drawerId
     ? machineList.find((machine) => machine.machine_id === drawerId) ?? null
     : null;
@@ -95,6 +118,16 @@ export default function App() {
 
   const openMachine = useCallback((id: string) => setDrawerId(id), []);
   const closeDrawer = useCallback(() => setDrawerId(null), []);
+
+  const applyMachineChanges = useCallback(
+    (machineId: string, features: Record<string, number>, score: number, level: RiskLevel) => {
+      applyOverride(machineId, features, score, level);
+    },
+    [],
+  );
+  const restoreMachine = useCallback((machineId: string) => {
+    clearOverride(machineId);
+  }, []);
 
   return (
     <>
@@ -254,6 +287,8 @@ export default function App() {
         modelError={model.error}
         rule={kpis.data?.risk_rule ?? null}
         onClose={closeDrawer}
+        onApply={applyMachineChanges}
+        onRestore={restoreMachine}
       />
 
     </>

@@ -22,7 +22,7 @@ export interface ReportInput {
   generatedAt: Date;
 }
 
-function escapeHtml(value: string | number): string {
+export function escapeHtml(value: string | number): string {
   return String(value).replace(/[&<>"']/g, (character) => {
     const map: Record<string, string> = {
       "&": "&amp;",
@@ -49,7 +49,7 @@ function badge(level: MachineRisk["risk_level"]): string {
   return `<span class="badge badge--${level}">${escapeHtml(STATUS_LABEL[level])}</span>`;
 }
 
-function table(head: string[], rows: string[][], numeric: number[] = []): string {
+export function table(head: string[], rows: string[][], numeric: number[] = []): string {
   const headHtml = head
     .map(
       (cell, index) =>

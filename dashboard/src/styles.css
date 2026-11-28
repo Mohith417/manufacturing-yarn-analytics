@@ -2183,6 +2183,33 @@ kbd {
   margin-left: auto;
 }
 
+.sim__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.sim__actions .btn {
+  margin-left: 0;
+}
+
+.sim__note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 8px 0 0;
+  color: var(--text-3);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.sim__note svg {
+  flex: none;
+  margin-top: 1px;
+}
+
 .sim__col {
   display: flex;
   flex-direction: column;
