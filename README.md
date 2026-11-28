@@ -41,9 +41,10 @@ with a web dashboard that turns the results into one ranked list of machines.
 8. [Tests](#tests)
 9. [Repository layout](#repository-layout)
 10. [Design decisions](#design-decisions-worth-defending)
-11. [Limitations](#limitations)
-12. [Deployment](#deployment)
-13. [Author](#author)
+11. [What this project demonstrates](#what-this-project-demonstrates)
+12. [Roadmap](#roadmap)
+13. [Deployment](#deployment)
+14. [Author](#author)
 
 ## What it is
 
@@ -475,18 +476,26 @@ See [`dashboard/README.md`](dashboard/README.md) for the pages, design notes and
 - **Benchmarks state their limits.** One sample per configuration; the fastest configuration there is not a general recommendation.
 - **No invented numbers anywhere.** A missing export writes no JSON, so the UI shows "Awaiting data export" instead of a fake value.
 
-## Limitations
+## What this project demonstrates
 
-- The dataset is synthetic; the live feed is a simulation, not real streaming, and is labelled "Simulated" wherever it appears.
-- Uploads are scored, never trained on. The model in the browser is fixed at the exported coefficients.
-- Precision is about 0.19 by design (recall about 0.73): roughly four of five "Check now" flags are false alarms. The Accuracy page shows this instead of hiding it.
-- The model uses six numeric readings only: no text, images or vibration waveforms.
-- The Hadoop cluster is a single Docker engine on one machine, so it demonstrates the architecture rather than multi-server speed-up.
-- Benchmark results are single-laptop, shared with several daemons; no scaling claim is made.
-- The optional API and its database run locally only. The hosted site has no backend.
-- Kept what-if conditions, History and the last-upload summary live in the visitor's own browser and are not shared or stored on a server.
-- The Quality page is built from the exported aggregates and does not react to per-machine changes.
-- The estimated-lost-units column exists in the export but is hidden in the UI.
+- **Distributed data processing.** 495,000 cleaned readings handled with Spark on a YARN cluster, stored on HDFS, with Hive SQL over the same Parquet files.
+- **Leakage-aware modelling.** A time-based split instead of a random one, because one-minute readings from the same machine are near-copies of each other.
+- **Honest evaluation.** Class weighting for the rare downtime label, accuracy listed last, false alarms shown on the Accuracy page, and a known ROC-AUC artefact found, explained and fixed in the scikit-learn export.
+- **Reproducible setup.** Pinned container images and package versions, no API keys, one command per stage, and 24 automated front-end tests.
+- **Product thinking.** One ranked list, one plain-language reason per machine, a what-if simulator, and reports a plant manager can download.
+- **Privacy by design.** Upload scoring happens in the browser, so no file ever leaves the visitor's machine.
+- **Shipping.** A live, static deployment on Vercel with no server to maintain.
+
+## Roadmap
+
+Ideas for next steps. None of these are built yet.
+
+- Tune the alert threshold to cut false alarms while keeping most of the recall.
+- Feed the pipeline from a real streaming source instead of the simulated feed.
+- Run the cluster on several machines to measure real speed-up.
+- Host the scoring API with a managed database, so the decision tree and random forest are available online.
+- Retrain on labelled readings uploaded by the user.
+- Add per-machine quality and defect views.
 
 ## Deployment
 
