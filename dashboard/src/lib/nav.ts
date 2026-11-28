@@ -10,6 +10,21 @@ export const PAGES = [
     blurb: "Search, filter and sort every machine",
   },
   {
+    id: "upload",
+    label: "Upload and score",
+    blurb: "Score your own CSV, in the browser",
+  },
+  {
+    id: "live",
+    label: "Live feed",
+    blurb: "A simulated reading every few seconds",
+  },
+  {
+    id: "history",
+    label: "History",
+    blurb: "Scored readings over time",
+  },
+  {
     id: "quality",
     label: "Quality",
     blurb: "Where defects come from",

@@ -72,6 +72,10 @@ export interface MachineRisk {
   risk_level: RiskLevel;
   top_factors: string[];
   features: Record<string, number>;
+  /** True when a visitor kept a what-if change; the row is then synthetic. */
+  simulated?: boolean;
+  /** When that change was applied, as an ISO string. */
+  applied_at?: string;
 }
 
 export interface ModelCoefficients {
