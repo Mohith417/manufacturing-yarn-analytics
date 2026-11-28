@@ -3397,8 +3397,8 @@ kbd {
 
 [data-theme="dark"] {
   --bg: #070a0e;
-  --surface: rgba(17, 23, 30, 0.78);
-  --surface-2: rgba(30, 39, 48, 0.66);
+  --surface: rgba(17, 23, 30, 0.92);
+  --surface-2: rgba(30, 39, 48, 0.82);
   --border: rgba(255, 255, 255, 0.09);
   --border-strong: rgba(255, 255, 255, 0.2);
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "../styles-landing.css";
 import Icon from "../components/Icon";
-import LogoMark from "../components/Logo";
+import { RingMark } from "../components/Logo";
 import WaveField from "../components/WaveField";
 import {
   formatInt,
@@ -72,20 +72,25 @@ export default function Landing({
             aria-label="YarnLens, back to top"
           >
             <span className="yl-brand__mark">
-              <LogoMark />
+              <RingMark />
             </span>
-            <span className="yl-brand__name">YarnLens</span>
+            <span className="yl-brand__word">
+              <span className="yl-brand__name">YarnLens</span>
+              <span className="yl-brand__tag">Plant intelligence</span>
+            </span>
           </button>
 
           <div className="yl-header__end">
             <a
-              className="yl-header__link"
+              className="yl-utility__link"
               href="https://github.com/Mohith417/manufacturing-yarn-analytics"
               target="_blank"
               rel="noreferrer"
             >
-              GitHub
+              <Icon name="github" size={14} />
+              <span>GitHub</span>
             </a>
+            <span className="yl-utility__rule" aria-hidden="true" />
             <button
               type="button"
               className="yl-icon"
@@ -93,7 +98,7 @@ export default function Landing({
               aria-label={resolved === "dark" ? "Switch to light theme" : "Switch to dark theme"}
               title={resolved === "dark" ? "Light theme" : "Dark theme"}
             >
-              <Icon name={resolved === "dark" ? "sun" : "moon"} size={16} />
+              <Icon name={resolved === "dark" ? "sun" : "moon"} size={15} />
             </button>
           </div>
         </div>
