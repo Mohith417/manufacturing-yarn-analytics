@@ -12,12 +12,11 @@ import EmptyState from "../components/EmptyState";
 import Icon from "../components/Icon";
 import PageHeader from "../components/PageHeader";
 import Panel from "../components/Panel";
-import { formatPct } from "../lib/data";
-import { streamUrl, type StreamReading } from "../lib/api";
-import { useApiHealth } from "../lib/useApiHealth";
+import { formatPct, type MachineRisk, type ModelCoefficients, type RiskRule } from "../lib/data";
+import { scoreFleet, seedFeatures, stepFleet, type LiveReading } from "../lib/live";
 import "../styles-pages.css";
 
-type Connection = "idle" | "connecting" | "live" | "paused" | "error";
+type Connection = "idle" | "live" | "paused";
 
 interface Tick {
   label: string;
@@ -32,70 +31,78 @@ interface Alert {
   time: string;
 }
 
-interface Batch {
-  at: string;
-  interval_seconds: number;
-  readings: StreamReading[];
-}
-
 const MAX_TICKS = 40;
 const MAX_ALERTS = 12;
+/** One batch every three seconds, as the local API stream did. */
+const TICK_MS = 3000;
 
-export default function Live() {
-  const { mode, retry } = useApiHealth();
+function clockLabel(iso: string): string {
+  return new Date(iso).toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
+export default function Live({
+  machines,
+  model,
+  rule,
+}: {
+  machines: MachineRisk[];
+  model: ModelCoefficients | null;
+  rule: RiskRule | null;
+}) {
   const [connection, setConnection] = useState<Connection>("idle");
-  const [readings, setReadings] = useState<Record<string, StreamReading>>({});
+  const [readings, setReadings] = useState<Record<string, LiveReading>>({});
   const [series, setSeries] = useState<Tick[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [interval, setIntervalSeconds] = useState(3);
   const [batches, setBatches] = useState(0);
 
-  const sourceRef = useRef<EventSource | null>(null);
-  const wantedRef = useRef(false);
+  const featuresRef = useRef<Record<string, Record<string, number>>>({});
   const previousLevels = useRef<Record<string, string>>({});
+  const wantedRef = useRef(false);
 
-  const closeSource = useCallback(() => {
-    sourceRef.current?.close();
-    sourceRef.current = null;
-  }, []);
+  /** One batch for every machine, scored with the saved model. */
+  const tick = useCallback(() => {
+    if (!model || machines.length === 0) {
+      return;
+    }
+    const at = new Date().toISOString();
+    featuresRef.current = stepFleet(featuresRef.current, machines);
+    const batch = scoreFleet(featuresRef.current, machines, model, rule, at);
 
-  const handleBatch = useCallback((batch: Batch) => {
-    setIntervalSeconds(batch.interval_seconds);
-    setBatches((count) => count + 1);
-
-    const next: Record<string, StreamReading> = {};
-    batch.readings.forEach((reading) => {
+    const next: Record<string, LiveReading> = {};
+    batch.forEach((reading) => {
       next[reading.machine_id] = reading;
     });
     setReadings((current) => ({ ...current, ...next }));
+    setBatches((count) => count + 1);
 
-    if (batch.readings.length > 0) {
-      const risks = batch.readings.map((reading) => reading.risk);
-      const average = risks.reduce((total, risk) => total + risk, 0) / risks.length;
-      const highest = Math.max(...risks);
-      const label = new Date(batch.at).toLocaleTimeString("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      });
-      setSeries((current) => [...current, { label, average, highest }].slice(-MAX_TICKS));
-    }
+    const risks = batch.map((reading) => reading.risk);
+    const label = clockLabel(at);
+    setSeries((current) =>
+      [
+        ...current,
+        {
+          label,
+          average: risks.reduce((total, risk) => total + risk, 0) / risks.length,
+          highest: Math.max(...risks),
+        },
+      ].slice(-MAX_TICKS),
+    );
 
-    // An alert fires when a machine enters "Check now", not on every reading,
-    // so a permanently risky machine does not flood the list.
+    // An alert fires when a machine enters Check now, not on every batch, so a
+    // permanently risky machine does not flood the list.
     const fresh: Alert[] = [];
-    batch.readings.forEach((reading) => {
+    batch.forEach((reading) => {
       const before = previousLevels.current[reading.machine_id];
       if (reading.status === "red" && before !== "red") {
         fresh.push({
           key: `${reading.machine_id}-${reading.timestamp}`,
           machineId: reading.machine_id,
           risk: reading.risk,
-          time: new Date(reading.timestamp).toLocaleTimeString("en-GB", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          }),
+          time: label,
         });
       }
       previousLevels.current[reading.machine_id] = reading.status;
@@ -103,127 +110,95 @@ export default function Live() {
     if (fresh.length > 0) {
       setAlerts((current) => [...fresh, ...current].slice(0, MAX_ALERTS));
     }
-  }, []);
+  }, [machines, model, rule]);
 
-  const connect = useCallback(() => {
-    if (mode !== "live") {
-      return;
+  // The feed runs on a plain interval: no server, no connection to drop.
+  useEffect(() => {
+    if (connection !== "live") {
+      return undefined;
     }
-    closeSource();
-    setConnection("connecting");
-    const source = new EventSource(streamUrl());
-    sourceRef.current = source;
-
-    source.addEventListener("hello", () => setConnection("live"));
-    source.addEventListener("batch", (event) => {
-      setConnection("live");
-      try {
-        handleBatch(JSON.parse((event as MessageEvent).data) as Batch);
-      } catch {
-        // A malformed frame is skipped; EventSource keeps the connection open.
-      }
-    });
-    source.addEventListener("reading", (event) => {
-      try {
-        const reading = JSON.parse((event as MessageEvent).data) as StreamReading;
-        handleBatch({
-          at: reading.timestamp,
-          interval_seconds: 3,
-          readings: [reading],
-        });
-      } catch {
-        // Ignore a single bad frame.
-      }
-    });
-    source.onopen = () => setConnection("live");
-    source.onerror = () => setConnection("error");
-  }, [mode, handleBatch, closeSource]);
+    tick();
+    const timer = window.setInterval(tick, TICK_MS);
+    return () => window.clearInterval(timer);
+  }, [connection, tick]);
 
   const start = useCallback(() => {
+    if (!model) {
+      return;
+    }
     wantedRef.current = true;
-    connect();
-  }, [connect]);
+    if (Object.keys(featuresRef.current).length === 0) {
+      featuresRef.current = seedFeatures(machines);
+    }
+    setConnection("live");
+  }, [machines, model]);
 
   const pause = useCallback(() => {
     wantedRef.current = false;
-    closeSource();
     setConnection("paused");
-  }, [closeSource]);
+  }, []);
 
   const reset = useCallback(() => {
+    wantedRef.current = false;
+    featuresRef.current = {};
+    previousLevels.current = {};
     setReadings({});
     setSeries([]);
     setAlerts([]);
     setBatches(0);
-    previousLevels.current = {};
+    setConnection("idle");
   }, []);
 
-  // Connect once the health probe says the API is up, and stop on unmount.
-  useEffect(() => {
-    if (mode === "live" && wantedRef.current && !sourceRef.current) {
-      connect();
-    }
-  }, [mode, connect]);
-
-  useEffect(
-    () => () => {
-      wantedRef.current = false;
-      closeSource();
-    },
-    [closeSource],
-  );
-
-  // A hidden tab pauses the stream instead of letting it run in the background.
+  // A hidden tab stops generating batches. Coming back does not restart on its
+  // own: the button says Resume, so the reader chooses.
   useEffect(() => {
     const onVisibility = () => {
-      if (document.visibilityState === "hidden" && sourceRef.current) {
-        closeSource();
-        setConnection("paused");
-      } else if (document.visibilityState === "visible" && wantedRef.current) {
-        connect();
+      if (document.visibilityState === "hidden" && wantedRef.current) {
+        pause();
       }
     };
     document.addEventListener("visibilitychange", onVisibility);
     return () => document.removeEventListener("visibilitychange", onVisibility);
-  }, [connect, closeSource]);
+  }, [pause]);
 
-  const machines = useMemo(
+  const machineReadings = useMemo(
     () => Object.values(readings).sort((a, b) => a.machine_id.localeCompare(b.machine_id)),
     [readings],
   );
 
   const latestBatch = useMemo(() => {
-    if (machines.length === 0) {
+    if (machineReadings.length === 0) {
       return null;
     }
     const average =
-      machines.reduce((total, reading) => total + reading.risk, 0) / machines.length;
+      machineReadings.reduce((total, reading) => total + reading.risk, 0) /
+      machineReadings.length;
     return {
       average,
-      worst: machines.reduce((best, reading) => (reading.risk > best.risk ? reading : best)),
-      at: machines[0].timestamp,
+      worst: machineReadings.reduce((best, reading) =>
+        reading.risk > best.risk ? reading : best,
+      ),
+      at: machineReadings[0].timestamp,
     };
-  }, [machines]);
+  }, [machineReadings]);
 
-  const chartData = series.map((tick) => ({
-    label: tick.label,
-    Average: Math.round(tick.average * 1000) / 10,
-    Highest: Math.round(tick.highest * 1000) / 10,
+  const chartData = series.map((point) => ({
+    label: point.label,
+    Average: Math.round(point.average * 1000) / 10,
+    Highest: Math.round(point.highest * 1000) / 10,
   }));
 
   const statusText: Record<Connection, string> = {
     idle: "Not started",
-    connecting: "Connecting to the local API",
     live: "Streaming a simulated reading",
     paused: "Paused",
-    error: "The stream dropped — retrying",
   };
 
   return (
     <>
       <PageHeader
         title="Live feed"
-        what="A simulated reading for every machine, scored by the local API. This is a demonstration stream, not plant telemetry."
+        what="A simulated reading for every machine, scored in this browser by the saved model. This is a demonstration stream, not plant telemetry."
       />
 
       <div className="live-bar">
@@ -239,15 +214,15 @@ export default function Live() {
             type="button"
             className="btn btn--primary btn--sm"
             onClick={start}
-            disabled={mode !== "live" || connection === "live" || connection === "connecting"}
+            disabled={!model || machines.length === 0 || connection === "live"}
           >
-            Start
+            {connection === "paused" ? "Resume" : "Start"}
           </button>
           <button
             type="button"
             className="btn btn--sm"
             onClick={pause}
-            disabled={connection !== "live" && connection !== "connecting" && connection !== "error"}
+            disabled={connection !== "live"}
           >
             Pause
           </button>
@@ -258,28 +233,12 @@ export default function Live() {
         </div>
       </div>
 
-      {mode !== "live" ? (
-        <Panel title="Live mode needs the local API">
+      {!model || machines.length === 0 ? (
+        <Panel title="Live mode needs the saved model and machine snapshot">
           <EmptyState
-            message={
-              mode === "checking"
-                ? "Checking for the local scoring API…"
-                : "This page streams scored readings from the local FastAPI service. Nothing is broken: every static page still works."
-            }
-            detail={
-              mode === "checking"
-                ? undefined
-                : "Start it with: docker compose -f docker/docker-compose.app.yml up --build — then check again."
-            }
+            message="The live feed drifts each machine's latest exported reading and scores it with model_coefficients.json."
+            detail="public/data/machine_risk.json or model_coefficients.json did not load, so there is nothing to simulate yet."
           />
-          <div className="upload-toolbar" style={{ borderBottom: 0, marginTop: 4 }}>
-            <span className="upload-scoredby">
-              The API answers on <code>{streamUrl().replace("/api/stream", "")}</code>
-            </span>
-            <button type="button" className="btn btn--sm" onClick={() => void retry()}>
-              Check again
-            </button>
-          </div>
         </Panel>
       ) : (
         <>
@@ -287,20 +246,22 @@ export default function Live() {
             <Panel
               title="Plant floor"
               subtitle="One tile per machine, coloured by the simulated reading that just arrived."
-              hint={machines.length > 0 ? `${machines.length} machines` : undefined}
+              hint={machineReadings.length > 0 ? `${machineReadings.length} machines` : undefined}
             >
-              {machines.length === 0 ? (
+              {machineReadings.length === 0 ? (
                 <div className="live-empty">
-                  Press <strong>Start</strong> to open the stream. The first batch arrives
-                  within a few seconds.
+                  Press <strong>Start</strong> to begin the stream. The first batch appears
+                  immediately, then every {TICK_MS / 1000} seconds.
                 </div>
               ) : (
                 <div className="live-tiles">
-                  {machines.map((reading) => (
+                  {machineReadings.map((reading) => (
                     <div
                       key={reading.machine_id}
                       className={`live-tile live-tile--${reading.status}`}
-                      title={`${reading.machine_id} · ${reading.factors.join(", ") || "no single driver"}`}
+                      title={`${reading.machine_id} · ${
+                        reading.factors.join(", ") || "no single driver"
+                      }`}
                     >
                       <span className="live-tile__id">{reading.machine_id}</span>
                       <span className="live-tile__risk">{formatPct(reading.risk, 0)}</span>
@@ -334,7 +295,7 @@ export default function Live() {
                   <div>
                     <dt>Every</dt>
                     <dd>
-                      <strong>{interval} s</strong>
+                      <strong>{TICK_MS / 1000} s</strong>
                     </dd>
                   </div>
                 </dl>
@@ -424,9 +385,10 @@ export default function Live() {
           </Panel>
 
           <p className="upload-footnote">
-            The generator drifts each machine's latest reading with the same distributions as
-            data/generate_data.py, then the API scores it. It is a demonstration of the live
-            path, not a measurement of a real machine.
+            Each batch drifts every machine's latest reading with the same distributions as
+            data/generate_data.py, then the saved logistic regression scores it in this
+            browser. It is a demonstration of the live path, not a measurement of a real
+            machine.
           </p>
         </>
       )}
