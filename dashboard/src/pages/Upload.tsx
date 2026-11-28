@@ -15,6 +15,7 @@ import {
 } from "../lib/csv";
 import { formatPct, type MachineRisk, type ModelCoefficients, type RiskRule } from "../lib/data";
 import { contributions } from "../lib/derive";
+import { appendReadings, readingFromUpload } from "../lib/history";
 import { scoreWithApi, type ModelName } from "../lib/api";
 import {
   countLevels,
@@ -191,6 +192,17 @@ export default function Upload({
       apiNote: null,
       scoredBy: "browser",
     });
+
+    // The scored file also becomes history, one row per machine, so a later
+    // visit can compare this reading with the ones that followed it.
+    if (!report.fatal && report.rowsValid > 0) {
+      const at = new Date().toISOString();
+      appendReadings(
+        latestPerMachine(report.readings).map((reading) =>
+          readingFromUpload(reading.machineId, reading.features, model, rule, at),
+        ),
+      );
+    }
   }
 
   /** The local API scores exactly the rows on screen, when it is running. */

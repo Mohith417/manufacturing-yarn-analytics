@@ -202,7 +202,13 @@ export default function App() {
                     rule={kpis.data?.risk_rule ?? null}
                   />
                 )}
-                {page === "history" && <History machines={machineList} />}
+                {page === "history" && (
+                  <History
+                    machines={machineList}
+                    model={model.data}
+                    rule={kpis.data?.risk_rule ?? null}
+                  />
+                )}
                 {page === "quality" && <Quality />}
                 {page === "accuracy" && <Accuracy />}
                 {page === "how-it-works" && <HowItWorks />}

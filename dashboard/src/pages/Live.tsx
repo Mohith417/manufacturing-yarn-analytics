@@ -13,6 +13,7 @@ import Icon from "../components/Icon";
 import PageHeader from "../components/PageHeader";
 import Panel from "../components/Panel";
 import { formatPct, type MachineRisk, type ModelCoefficients, type RiskRule } from "../lib/data";
+import { appendReadings, type StoredReading } from "../lib/history";
 import { scoreFleet, seedFeatures, stepFleet, type LiveReading } from "../lib/live";
 import "../styles-pages.css";
 
@@ -110,6 +111,23 @@ export default function Live({
     if (fresh.length > 0) {
       setAlerts((current) => [...fresh, ...current].slice(0, MAX_ALERTS));
     }
+
+    // Every batch is kept in this browser, so the History page can plot it.
+    appendReadings(
+      batch.map(
+        (reading) =>
+          ({
+            id: `live-${reading.timestamp}-${reading.machine_id}`,
+            machine_id: reading.machine_id,
+            risk: reading.risk,
+            status: reading.status,
+            simulated: true,
+            source: "live",
+            model: "logistic_regression",
+            scored_at: reading.timestamp,
+          }) satisfies StoredReading,
+      ),
+    );
   }, [machines, model, rule]);
 
   // The feed runs on a plain interval: no server, no connection to drop.
