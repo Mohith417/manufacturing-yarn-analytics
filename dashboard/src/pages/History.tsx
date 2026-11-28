@@ -14,15 +14,14 @@ import PageHeader from "../components/PageHeader";
 import Panel from "../components/Panel";
 import RiskBadge from "../components/RiskBadge";
 import Skeleton from "../components/Skeleton";
-import { formatPct, type MachineRisk } from "../lib/data";
+import { formatPct, type MachineRisk, type ModelCoefficients, type RiskRule } from "../lib/data";
 import {
-  clearHistory,
-  fetchHistory,
-  fetchTrends,
-  type HistoryReading,
-  type TrendPoint,
-} from "../lib/api";
-import { useApiHealth } from "../lib/useApiHealth";
+  clearStoredHistory,
+  historyTrend,
+  loadHistory,
+  seedHistory,
+  type StoredReading,
+} from "../lib/history";
 import "../styles-pages.css";
 
 function bucketLabel(iso: string): string {
@@ -52,43 +51,60 @@ function stamp(iso: string): string {
   });
 }
 
-export default function History({ machines }: { machines: MachineRisk[] }) {
-  const { mode, retry } = useApiHealth();
+export default function History({
+  machines,
+  model,
+  rule,
+}: {
+  machines: MachineRisk[];
+  model: ModelCoefficients | null;
+  rule: RiskRule | null;
+}) {
   const [machineId, setMachineId] = useState("");
   const [limit, setLimit] = useState(200);
-  const [rows, setRows] = useState<HistoryReading[]>([]);
-  const [trends, setTrends] = useState<TrendPoint[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [all, setAll] = useState<StoredReading[]>([]);
   const [confirming, setConfirming] = useState(false);
-  const [clearing, setClearing] = useState(false);
   const [cleared, setCleared] = useState<number | null>(null);
+  /** False until the first read (and seed) finishes, so a slow load is not
+   * mistaken for an empty history. */
+  const [attempted, setAttempted] = useState(false);
+
+  const reload = useCallback(() => setAll(loadHistory()), []);
+
+  // Open the page with 24 hours of readings, once, so the chart is not empty on
+  // a first visit. After that the live feed and uploads keep appending.
+  useEffect(() => {
+    if (model && machines.length > 0) {
+      seedHistory(machines, model, rule);
+    }
+    reload();
+    setAttempted(true);
+  }, [machines, model, rule, reload]);
+
+  // Another page wrote a reading (live feed batch, scored file): re-read.
+  useEffect(() => {
+    const onChange = () => reload();
+    window.addEventListener("yarnlens:history", onChange);
+    window.addEventListener("storage", onChange);
+    return () => {
+      window.removeEventListener("yarnlens:history", onChange);
+      window.removeEventListener("storage", onChange);
+    };
+  }, [reload]);
 
   const machineIds = useMemo(
     () => [...new Set(machines.map((machine) => machine.machine_id))].sort(),
     [machines],
   );
 
-  const load = useCallback(async () => {
-    if (mode !== "live") {
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const [history, trend] = await Promise.all([fetchHistory(machineId, limit), fetchTrends(24)]);
-      setRows(history.readings);
-      setTrends(trend.points);
-    } catch {
-      setError("The local API did not answer. The stored history is still in the database.");
-    } finally {
-      setLoading(false);
-    }
-  }, [mode, machineId, limit]);
+  const filtered = useMemo(
+    () => all.filter((row) => (machineId ? row.machine_id === machineId : true)),
+    [all, machineId],
+  );
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const rows = useMemo(() => filtered.slice(0, limit), [filtered, limit]);
+
+  const trends = useMemo(() => historyTrend(filtered, 24), [filtered]);
 
   const chartData = useMemo(
     () =>
@@ -100,72 +116,61 @@ export default function History({ machines }: { machines: MachineRisk[] }) {
     [trends],
   );
 
-  async function confirmClear() {
-    setClearing(true);
-    try {
-      const result = await clearHistory();
-      setCleared(result.deleted);
-      setRows([]);
-      setTrends([]);
-      setConfirming(false);
-    } catch {
-      setError("History could not be cleared. Check that the local API is still running.");
-    } finally {
-      setClearing(false);
+  function confirmClear() {
+    const deleted = clearStoredHistory();
+    setAll([]);
+    setCleared(deleted);
+    setConfirming(false);
+  }
+
+  function rebuild() {
+    if (!model) {
+      return;
     }
+    seedHistory(machines, model, rule, true);
+    setCleared(null);
+    reload();
   }
 
   return (
     <>
       <PageHeader
         title="History"
-        what="Every scored reading stored by the local API, so a machine's risk can be read over time instead of one moment."
+        what="Every scored reading kept in this browser, so a machine's risk can be read over time instead of one moment."
         actions={
-          mode === "live" ? (
-            <button
-              type="button"
-              className="btn btn--sm"
-              onClick={() => setConfirming(true)}
-              disabled={rows.length === 0 && trends.length === 0}
-            >
-              Clear history
-            </button>
-          ) : undefined
+          <button
+            type="button"
+            className="btn btn--sm"
+            onClick={() => setConfirming(true)}
+            disabled={all.length === 0}
+          >
+            Clear history
+          </button>
         }
       />
 
-      {mode !== "live" ? (
-        <Panel title="History needs the local API">
+      {!attempted ? (
+        <Panel title="Reading this browser's history">
+          <Skeleton lines={6} />
+        </Panel>
+      ) : !model || machines.length === 0 ? (
+        <Panel title="History needs the machine snapshot and the saved model">
           <EmptyState
-            message={
-              mode === "checking"
-                ? "Checking for the local scoring API…"
-                : "Scored readings are stored in the local PostgreSQL database by the FastAPI service. The static site keeps working without it."
-            }
-            detail={
-              mode === "checking"
-                ? undefined
-                : "Start it with: docker compose -f docker/docker-compose.app.yml up --build — then check again."
-            }
+            message="Stored readings are scored with model_coefficients.json against each machine's latest reading in machine_risk.json."
+            detail="Those two files did not load, so there is nothing to read over time yet."
           />
-          <div className="upload-toolbar" style={{ borderBottom: 0, marginTop: 4 }}>
-            <span className="upload-scoredby">Upload scoring and the live feed both write here.</span>
-            <button type="button" className="btn btn--sm" onClick={() => void retry()}>
-              Check again
-            </button>
-          </div>
         </Panel>
       ) : (
         <>
           <Panel
             title="Average chance of breakdown per hour"
-            subtitle="Last 24 hours of stored readings. One point per hour that has a reading."
+            subtitle="The last 24 hours of readings kept in this browser. One point per hour that has a reading."
             hint={trends.length > 0 ? `${trends.length} hours` : undefined}
           >
             {chartData.length === 0 ? (
               <div className="live-empty">
-                No reading has been stored yet. Score a file on Upload and score, or run the
-                live feed, and it will appear here.
+                No reading is stored in the last 24 hours. Run the live feed or score a file
+                on Upload and score, and it will appear here.
               </div>
             ) : chartData.length < 2 ? (
               // A line needs two points. Saying so beats an empty frame.
@@ -223,8 +228,8 @@ export default function History({ machines }: { machines: MachineRisk[] }) {
 
           <Panel
             title="Stored readings"
-            subtitle="Newest first. Simulated rows come from the live feed; upload rows come from a scored file."
-            hint={loading ? "reading" : `${rows.length} rows`}
+            subtitle="Newest first. Live rows come from the feed, upload rows from a scored file, sample rows from the first visit's history."
+            hint={`${rows.length} rows`}
           >
             <div className="history-filters">
               <div className="field">
@@ -256,13 +261,13 @@ export default function History({ machines }: { machines: MachineRisk[] }) {
                 </select>
               </div>
 
-              <button type="button" className="btn btn--sm" onClick={() => void load()}>
+              <button type="button" className="btn btn--sm" onClick={reload}>
                 <Icon name="reset" size={13} />
                 Refresh
               </button>
 
               <span className="history-meta">
-                Stored rows: <strong>{rows.length}</strong>
+                Stored rows: <strong>{filtered.length}</strong>
               </span>
             </div>
 
@@ -270,24 +275,29 @@ export default function History({ machines }: { machines: MachineRisk[] }) {
               <div className="notice notice--warn">
                 <Icon name="check" size={15} />
                 <div>
-                  <p>History cleared: {cleared} stored readings were deleted.</p>
+                  <p>
+                    History cleared: {cleared} stored readings were removed from this browser.
+                  </p>
                 </div>
               </div>
             )}
 
-            {error && (
-              <div className="notice notice--bad" role="alert">
-                <Icon name="alert" size={15} />
-                <div>
-                  <p>{error}</p>
+            {rows.length === 0 ? (
+              <>
+                <EmptyState
+                  message={
+                    cleared !== null
+                      ? "This browser has no stored readings now."
+                      : "No stored reading matches this filter yet."
+                  }
+                  detail="Run the live feed or score a file to add readings, or rebuild the 24-hour sample below."
+                />
+                <div className="history-filters" style={{ borderBottom: 0 }}>
+                  <button type="button" className="btn btn--sm" onClick={rebuild}>
+                    Generate 24 hours of sample history
+                  </button>
                 </div>
-              </div>
-            )}
-
-            {loading && rows.length === 0 ? (
-              <Skeleton lines={5} />
-            ) : rows.length === 0 ? (
-              <EmptyState message="No stored reading matches this filter yet." />
+              </>
             ) : (
               <div className="table-wrap">
                 <table className="table table--history">
@@ -311,7 +321,11 @@ export default function History({ machines }: { machines: MachineRisk[] }) {
                         </td>
                         <td>
                           <span className={`source-tag${row.simulated ? " source-tag--sim" : ""}`}>
-                            {row.simulated ? "Simulated" : row.source === "upload" ? "Upload" : row.source}
+                            {row.source === "upload"
+                              ? "Upload"
+                              : row.source === "live"
+                                ? "Live feed"
+                                : "Simulated"}
                           </span>
                         </td>
                         <td className="muted">{row.model.replace(/_/g, " ")}</td>
@@ -331,8 +345,9 @@ export default function History({ machines }: { machines: MachineRisk[] }) {
           <div className="history-confirm__box">
             <h2 id="clear-title">Clear all stored readings?</h2>
             <p>
-              This deletes every scored reading in the local database, including rows written
-              by the live feed. The machine scores in the JSON exports are not touched.
+              This deletes every scoring this browser kept, including rows written by the
+              live feed and by scored files. The machine scores in the JSON exports are not
+              touched, and nothing on a server changes.
             </p>
             <div className="history-confirm__actions">
               <button
@@ -340,17 +355,11 @@ export default function History({ machines }: { machines: MachineRisk[] }) {
                 className="btn"
                 onClick={() => setConfirming(false)}
                 autoFocus
-                disabled={clearing}
               >
                 Keep history
               </button>
-              <button
-                type="button"
-                className="btn btn--primary"
-                onClick={() => void confirmClear()}
-                disabled={clearing}
-              >
-                {clearing ? "Clearing…" : "Clear history"}
+              <button type="button" className="btn btn--primary" onClick={confirmClear}>
+                Clear history
               </button>
             </div>
           </div>
